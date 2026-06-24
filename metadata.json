@@ -1,0 +1,6 @@
+{
+  "name": "Daim Pharmacy",
+  "description": "Doctor medicine ordering app for Daim Pharmacy with real-time tracking, print slip generation, and medicine/doctor account management.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
