@@ -35,28 +35,17 @@ object PrintHelper {
                 }
             }
 
-            var grandTotal = 0.0
             val itemsHtml = StringBuilder()
             for (item in itemsList) {
-                val itemTotal = item.price * item.quantity
-                grandTotal += itemTotal
                 itemsHtml.append("""
                     <tr>
                         <td style="padding: 6px 0; border-bottom: 1px solid #eee;">
-                            <div style="font-weight: bold; color: #000;">${escapeHtml(item.medicineName)}</div>
+                            <div style="font-weight: bold; color: #000;">${escapeHtml(item.medicineName)} <span style="font-weight: bold; margin-left: 8px; color: #000;">x ${item.quantity}</span></div>
                             <div style="font-size: 11px; color: #555;">Formula: ${escapeHtml(item.formula)}</div>
-                        </td>
-                        <td class="text-right" style="padding: 6px 0; border-bottom: 1px solid #eee;">
-                            ${item.quantity} x Rs. ${String.format(Locale.US, "%.2f", item.price)}
-                        </td>
-                        <td class="text-right" style="padding: 6px 0; border-bottom: 1px solid #eee; font-weight: bold;">
-                            Rs. ${String.format(Locale.US, "%.2f", itemTotal)}
                         </td>
                     </tr>
                 """.trimIndent())
             }
-
-            val formattedTotal = String.format(Locale.US, "%.2f", grandTotal)
 
             val html = """
                 <!DOCTYPE html>
@@ -170,21 +159,13 @@ object PrintHelper {
                     <table class="items-table">
                         <thead>
                             <tr>
-                                <th>Medicine Description</th>
-                                <th class="text-right">Qty & Price</th>
-                                <th class="text-right">Subtotal</th>
+                                <th>Medicine Description &amp; Qty</th>
                             </tr>
                         </thead>
                         <tbody>
                             $itemsHtml
                         </tbody>
                     </table>
-                    
-                    <div class="divider"></div>
-                    
-                    <div class="total-container">
-                        TOTAL AMOUNT: Rs. $formattedTotal
-                    </div>
                     
                     <div class="footer">
                         * Daim Pharmacy - Quality Healthcare Services *<br>
@@ -215,18 +196,11 @@ object PrintHelper {
         sb.append("Status:       ${order.status.uppercase()}\n")
         sb.append("-------------------------------\n\n")
         
-        var grandTotal = 0.0
         for ((index, item) in itemsList.withIndex()) {
-            val itemTotal = item.price * item.quantity
-            grandTotal += itemTotal
-            sb.append("${index + 1}. ${item.medicineName}\n")
-            sb.append("   Formula: ${item.formula}\n")
-            sb.append("   Qty & Price: ${item.quantity} x Rs. ${String.format(Locale.US, "%.2f", item.price)}\n")
-            sb.append("   Subtotal: Rs. ${String.format(Locale.US, "%.2f", itemTotal)}\n\n")
+            sb.append("${index + 1}. ${item.medicineName} x ${item.quantity}\n")
+            sb.append("   Formula: ${item.formula}\n\n")
         }
         
-        sb.append("-------------------------------\n")
-        sb.append("TOTAL AMOUNT: Rs. ${String.format(Locale.US, "%.2f", grandTotal)}\n")
         sb.append("===============================\n")
         sb.append("* Daim Pharmacy - Quality Healthcare Services *\n")
 

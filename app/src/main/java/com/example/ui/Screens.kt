@@ -2986,64 +2986,34 @@ fun AdminOrderDetailDialog(
                                 verticalArrangement = Arrangement.spacedBy(4.dp)
                             ) {
                                 for (item in itemsList) {
-                                    val itemTotal = item.price * item.quantity
-                                    Column(
+                                    Row(
                                         modifier = Modifier
                                             .fillMaxWidth()
-                                            .padding(vertical = 2.dp)
+                                            .padding(vertical = 4.dp),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.CenterVertically
                                     ) {
-                                        Row(
-                                            modifier = Modifier.fillMaxWidth(),
-                                            horizontalArrangement = Arrangement.SpaceBetween
-                                        ) {
+                                        Column(modifier = Modifier.weight(1f)) {
+                                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                                Text(
+                                                    item.medicineName,
+                                                    style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold),
+                                                    color = Color.Black
+                                                )
+                                                Text(
+                                                    " x ${item.quantity}",
+                                                    style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold),
+                                                    color = Color.Black
+                                                )
+                                            }
                                             Text(
-                                                item.medicineName,
-                                                style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold),
-                                                color = Color.Black,
-                                                modifier = Modifier.weight(1f)
-                                            )
-                                            Text(
-                                                "Rs. ${String.format(Locale.US, "%.2f", itemTotal)}",
-                                                style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold),
-                                                color = Color.Black
-                                            )
-                                        }
-                                        Row(
-                                            modifier = Modifier.fillMaxWidth(),
-                                            horizontalArrangement = Arrangement.SpaceBetween
-                                        ) {
-                                            Text(
-                                                "  Formula: ${item.formula}",
-                                                style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace, fontSize = 10.sp),
-                                                color = Color.Gray,
-                                                modifier = Modifier.weight(1f)
-                                            )
-                                            Text(
-                                                "  ${item.quantity} x Rs. ${String.format(Locale.US, "%.2f", item.price)}",
+                                                "Formula: ${item.formula}",
                                                 style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace, fontSize = 10.sp),
                                                 color = Color.Gray
                                             )
                                         }
                                     }
                                 }
-                            }
-
-                            Divider(color = Color(0xFFCBD5E1), thickness = 1.dp, modifier = Modifier.padding(vertical = 4.dp))
-                            
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween
-                            ) {
-                                Text(
-                                    "TOTAL AMOUNT:",
-                                    style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold),
-                                    color = Color.Black
-                                )
-                                Text(
-                                    "Rs. ${String.format(Locale.US, "%.2f", itemsList.sumOf { it.price * it.quantity })}",
-                                    style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold),
-                                    color = Color.Black
-                                )
                             }
                         }
                     }

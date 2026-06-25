@@ -9,12 +9,12 @@ plugins {
 
 android {
   namespace = "com.example"
-  compileSdk { version = release(36) { minorApiLevel = 1 } }
+  compileSdk = 36
 
   defaultConfig {
     applicationId = "com.aistudio.daimpharmacy.orvdpq"
     minSdk = 24
-    targetSdk = 36
+    targetSdk = 35
     versionCode = 1
     versionName = "1.0"
 
@@ -49,7 +49,7 @@ android {
   buildTypes {
     release {
       isCrunchPngs = false
-      isMinifyEnabled = true
+      isMinifyEnabled = false
       proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
       signingConfig = signingConfigs.getByName("release")
     }
@@ -133,23 +133,38 @@ dependencies {
 }
 
 abstract class CopyApkTask : DefaultTask() {
-    @get:InputFile
-    abstract val sourceApk: org.gradle.api.file.RegularFileProperty
+    @get:Input
+    abstract val rootDirPath: Property<String>
 
-    @get:OutputFile
-    abstract val targetApk: org.gradle.api.file.RegularFileProperty
+    @get:Input
+    abstract val buildDirPath: Property<String>
 
     @TaskAction
     fun copy() {
-        val src = sourceApk.get().asFile
-        if (src.exists()) {
-            src.copyTo(targetApk.get().asFile, overwrite = true)
+        val buildDir = File(buildDirPath.get())
+        val releaseApk = File(buildDir, "outputs/apk/release/app-release.apk")
+        val debugApk = File(buildDir, "outputs/apk/debug/app-debug.apk")
+        val destFile = File(rootDirPath.get(), "DaimPharmacy.apk")
+        
+        if (releaseApk.exists()) {
+            releaseApk.copyTo(destFile, overwrite = true)
+            println("Successfully copied Release APK to root: ${destFile.absolutePath}")
+        } else if (debugApk.exists()) {
+            debugApk.copyTo(destFile, overwrite = true)
+            println("Successfully copied Debug APK to root: ${destFile.absolutePath}")
+        } else {
+            println("No APK found to copy to root!")
         }
     }
 }
 
 tasks.register<CopyApkTask>("copyApkToRoot") {
-    sourceApk.set(layout.buildDirectory.file("outputs/apk/debug/app-debug.apk"))
-    targetApk.set(project.layout.projectDirectory.file("../DaimPharmacy.apk"))
+    rootDirPath.set(project.rootDir.absolutePath)
+    buildDirPath.set(layout.buildDirectory.get().asFile.absolutePath)
+}
+
+afterEvaluate {
+    tasks.findByName("assembleDebug")?.finalizedBy("copyApkToRoot")
+    tasks.findByName("assembleRelease")?.finalizedBy("copyApkToRoot")
 }
 
