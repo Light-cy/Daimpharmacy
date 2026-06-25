@@ -28,31 +28,20 @@ object FirebaseSyncHelper {
     }
 
     fun getFirebaseConfig(context: Context): FirebaseConfig {
-        val prefs = context.getSharedPreferences("firebase_settings", Context.MODE_PRIVATE)
         return FirebaseConfig(
-            projectId = prefs.getString("project_id", "daimpharmacy-8f95a") ?: "daimpharmacy-8f95a",
-            apiKey = prefs.getString("api_key", "AIzaSyCgnLBkzlBrDmU9Y9ARGBTE0mH_UmTW4qM") ?: "AIzaSyCgnLBkzlBrDmU9Y9ARGBTE0mH_UmTW4qM",
-            storageBucket = prefs.getString("storage_bucket", "daimpharmacy-8f95a.firebasestorage.app") ?: "daimpharmacy-8f95a.firebasestorage.app",
-            applicationId = prefs.getString("app_id", "1:697636229555:android:94394790c868185338fbc6") ?: "1:697636229555:android:94394790c868185338fbc6"
+            projectId = "daimpharmacy-8f95a",
+            apiKey = "AIzaSyCgnLBkzlBrDmU9Y9ARGBTE0mH_UmTW4qM",
+            storageBucket = "daimpharmacy-8f95a.firebasestorage.app",
+            applicationId = "1:697636229555:android:94394790c868185338fbc6"
         )
     }
 
     fun saveFirebaseConfig(context: Context, config: FirebaseConfig) {
-        val prefs = context.getSharedPreferences("firebase_settings", Context.MODE_PRIVATE)
-        prefs.edit()
-            .putString("project_id", config.projectId.trim())
-            .putString("api_key", config.apiKey.trim())
-            .putString("storage_bucket", config.storageBucket.trim())
-            .putString("app_id", config.applicationId.trim())
-            .apply()
+        // No-op or keep empty since configuration is hardcoded now
     }
 
     fun initializeFirebase(context: Context): Boolean {
         if (!isFirebaseEnabled(context)) return false
-        val config = getFirebaseConfig(context)
-        if (config.projectId.isBlank() || config.apiKey.isBlank() || config.applicationId.isBlank()) {
-            return false
-        }
 
         try {
             val apps = FirebaseApp.getApps(context)
@@ -60,10 +49,10 @@ object FirebaseSyncHelper {
                 return true
             }
             val options = FirebaseOptions.Builder()
-                .setProjectId(config.projectId)
-                .setApiKey(config.apiKey)
-                .setStorageBucket(if (config.storageBucket.isBlank()) "${config.projectId}.appspot.com" else config.storageBucket)
-                .setApplicationId(config.applicationId)
+                .setProjectId("daimpharmacy-8f95a")
+                .setApiKey("AIzaSyCgnLBkzlBrDmU9Y9ARGBTE0mH_UmTW4qM")
+                .setStorageBucket("daimpharmacy-8f95a.firebasestorage.app")
+                .setApplicationId("1:697636229555:android:94394790c868185338fbc6")
                 .build()
             FirebaseApp.initializeApp(context, options)
             return true
@@ -297,12 +286,10 @@ object FirebaseSyncHelper {
                                 if (existing != null && existing.status != status) {
                                     if (currentUser?.role == "doctor" && currentUser.id == doctorId) {
                                         val notificationTitle = when (status.lowercase()) {
-                                            "ready" -> "Order Ready for Pickup"
                                             "completed" -> "Order Completed"
                                             else -> "Order Status Updated"
                                         }
                                         val notificationMessage = when (status.lowercase()) {
-                                            "ready" -> "Hi Dr. $doctorName, your order is ready for pickup."
                                             "completed" -> "Hi Dr. $doctorName, your order has been completed. Thank you!"
                                             else -> "Order #$id status changed to: $status"
                                         }
@@ -393,6 +380,68 @@ object FirebaseSyncHelper {
                 }
             }
         } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    fun startRealtimeCategoriesSync(context: Context, repository: PharmacyRepository, scope: CoroutineScope) {
+        if (!initializeFirebase(context)) {
+            repository.setCategoriesLoading(false)
+            return
+        }
+        try {
+            val db = FirebaseFirestore.getInstance()
+            try {
+                val settings = com.google.firebase.firestore.FirebaseFirestoreSettings.Builder()
+                    .setLocalCacheSettings(com.google.firebase.firestore.PersistentCacheSettings.newBuilder().build())
+                    .build()
+                db.firestoreSettings = settings
+            } catch (ex: Exception) {
+                // Ignore if settings already configured
+            }
+
+            db.collection("categories").addSnapshotListener { snapshots, e ->
+                repository.setCategoriesLoading(false)
+                if (e != null) {
+                    e.printStackTrace()
+                    return@addSnapshotListener
+                }
+                if (snapshots != null) {
+                    val list = snapshots.documents.mapNotNull { doc ->
+                        val id = doc.getString("id") ?: doc.id
+                        val name = doc.getString("name") ?: ""
+                        val iconName = doc.getString("iconName") ?: ""
+                        if (name.isNotEmpty()) {
+                            CategoryEntity(id = id, name = name, iconName = iconName)
+                        } else {
+                            null
+                        }
+                    }
+
+                    if (list.isEmpty()) {
+                        scope.launch(Dispatchers.IO) {
+                            val defaultCats = listOf(
+                                CategoryEntity(id = "tablets", name = "Tablets", iconName = "medication"),
+                                CategoryEntity(id = "capsules", name = "Capsules", iconName = "medical_services"),
+                                CategoryEntity(id = "syrups", name = "Syrups", iconName = "liquor"),
+                                CategoryEntity(id = "injections", name = "Injections", iconName = "vaccines")
+                            )
+                            for (cat in defaultCats) {
+                                val data = mapOf(
+                                    "id" to cat.id,
+                                    "name" to cat.name,
+                                    "iconName" to cat.iconName
+                                )
+                                db.collection("categories").document(cat.id).set(data)
+                            }
+                        }
+                    } else {
+                        repository.updateCategories(list)
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            repository.setCategoriesLoading(false)
             e.printStackTrace()
         }
     }

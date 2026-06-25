@@ -1,0 +1,24 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="512dp"
+    android:height="512dp"
+    android:viewportWidth="512"
+    android:viewportHeight="512">
+
+    <!-- Card Background with rounded corners and soft mint background (matching DP card design) -->
+    <path
+        android:pathData="M110,45 h292 c35,0 65,30 65,65 v292 c0,35 -30,65 -65,65 h-292 c-35,0 -65,-30 -65,-65 v-292 c0,-35 30,-65 65,-65 z"
+        android:fillColor="#F1F8F5"
+        android:strokeColor="#C8E6C9"
+        android:strokeWidth="8" />
+
+    <!-- Stylized Letter 'D' in rich green -->
+    <path
+        android:pathData="M165,160 C235,160 275,185 275,256 C275,327 235,352 165,352 L150,352 C140,352 132,344 132,334 L132,178 C132,168 140,160 150,160 Z M170,195 L165,195 C161,195 158,198 158,202 L158,310 C158,314 161,317 165,317 H170 C215,317 245,300 245,256 C245,212 215,195 170,195 Z"
+        android:fillColor="#2E7D32" />
+
+    <!-- Stylized Letter 'P' in vibrant green -->
+    <path
+        android:pathData="M285,160 H355 C395,160 415,185 415,230 C415,275 395,296 355,296 H315 V385 C315,395 307,403 297,403 L293,403 C283,403 275,395 275,385 L275,178 C275,168 283,160 293,160 Z M315,195 V261 H355 C375,261 385,250 385,230 C385,210 375,195 355,195 Z"
+        android:fillColor="#4CAF50" />
+
+</vector>

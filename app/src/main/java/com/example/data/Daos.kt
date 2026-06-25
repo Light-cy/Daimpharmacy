@@ -42,20 +42,7 @@ interface MedicineDao {
     suspend fun deleteMedicine(medicine: MedicineEntity)
 }
 
-@Dao
-interface CategoryDao {
-    @Query("SELECT * FROM categories ORDER BY name ASC")
-    fun getAllCategories(): Flow<List<CategoryEntity>>
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertCategory(category: CategoryEntity)
-
-    @Update
-    suspend fun updateCategory(category: CategoryEntity)
-
-    @Delete
-    suspend fun deleteCategory(category: CategoryEntity)
-}
 
 @Dao
 interface OrderDao {

@@ -46,9 +46,38 @@ class PharmacyViewModel(
     private val _loginLoading = MutableStateFlow(false)
     val loginLoading: StateFlow<Boolean> = _loginLoading.asStateFlow()
 
+    private val _isLoading = MutableStateFlow(true)
+    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
+
+    private val _isRefreshing = MutableStateFlow(false)
+    val isRefreshing: StateFlow<Boolean> = _isRefreshing.asStateFlow()
+
     init {
         restoreSession()
         triggerFirebaseSync()
+        viewModelScope.launch {
+            kotlinx.coroutines.withTimeoutOrNull(1500) {
+                combine(repository.allMedicines, repository.allOrders) { meds, ords ->
+                    meds.isNotEmpty() || ords.isNotEmpty()
+                }.firstOrNull { it }
+            }
+            _isLoading.value = false
+        }
+    }
+
+    fun refreshData() {
+        viewModelScope.launch {
+            _isRefreshing.value = true
+            val context = getApplication<Application>()
+            FirebaseSyncHelper.pullMedicinesFromFirestore(
+                context = context,
+                repository = repository,
+                scope = viewModelScope
+            )
+            // Wait briefly to show refresh indicator
+            kotlinx.coroutines.delay(1000)
+            _isRefreshing.value = false
+        }
     }
 
     fun triggerFirebaseSync() {
@@ -69,6 +98,11 @@ class PharmacyViewModel(
             scope = viewModelScope
         )
         FirebaseSyncHelper.startRealtimeUsersSync(
+            context = context,
+            repository = repository,
+            scope = viewModelScope
+        )
+        FirebaseSyncHelper.startRealtimeCategoriesSync(
             context = context,
             repository = repository,
             scope = viewModelScope
@@ -111,6 +145,9 @@ class PharmacyViewModel(
     // --- Master Data Flows ---
     val allCategories: StateFlow<List<CategoryEntity>> = repository.allCategories
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    val isCategoriesLoading: StateFlow<Boolean> = repository.isCategoriesLoading
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), true)
 
     val allMedicines: StateFlow<List<MedicineEntity>> = repository.allMedicines
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
@@ -370,7 +407,8 @@ class PharmacyViewModel(
 
     fun addCategory(name: String, iconName: String) {
         viewModelScope.launch {
-            repository.insertCategory(CategoryEntity(name = name, iconName = iconName))
+            val id = java.util.UUID.randomUUID().toString()
+            repository.insertCategory(CategoryEntity(id = id, name = name, iconName = iconName))
         }
     }
 

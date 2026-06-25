@@ -27,11 +27,10 @@ data class MedicineEntity(
     val imageUri: String? = null
 )
 
-@Entity(tableName = "categories")
 data class CategoryEntity(
-    @PrimaryKey(autoGenerate = true) val id: Int = 0,
-    val name: String,
-    val iconName: String // name of material icon (e.g. "Tablets", "Syrups")
+    val id: String = "",
+    val name: String = "",
+    val iconName: String = ""
 )
 
 @Entity(tableName = "orders")
@@ -40,7 +39,7 @@ data class OrderEntity(
     val doctorId: String,
     val doctorName: String,
     val createdAt: Long = System.currentTimeMillis(),
-    val status: String, // "pending" | "ready" | "completed"
+    val status: String, // "pending" | "completed"
     val itemsJson: String // JSON representation of ordered items
 )
 

@@ -1,3 +1,4 @@
+@file:OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
 package com.example.ui
 
 import androidx.compose.animation.*
@@ -25,11 +26,14 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.*
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
+import androidx.compose.material3.pulltorefresh.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
+import androidx.compose.foundation.Image
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
@@ -50,11 +54,17 @@ import androidx.compose.ui.window.DialogProperties
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import android.net.Uri
+import android.content.Context
+import android.content.Intent
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.data.*
+import com.example.R
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
 import java.text.SimpleDateFormat
 import java.util.*
+
+const val ADMIN_WHATSAPP_NUMBER = "923109551558"
 
 // Dynamic icon mapper to convert database icon strings to Jetpack Compose Material 3 Icons
 fun getCategoryIcon(name: String): ImageVector {
@@ -139,6 +149,250 @@ fun ShimmerEffect(modifier: Modifier = Modifier) {
 }
 
 @Composable
+fun MedicineGridCardShimmer() {
+    Card(
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        border = BorderStroke(1.dp, Color(0xFFE8F5E9)),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(100.dp)
+                    .clip(RoundedCornerShape(12.dp))
+            ) {
+                ShimmerEffect()
+            }
+
+            Column(
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth(0.8f)
+                        .height(16.dp)
+                        .clip(RoundedCornerShape(4.dp))
+                ) {
+                    ShimmerEffect()
+                }
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth(0.5f)
+                        .height(12.dp)
+                        .clip(RoundedCornerShape(4.dp))
+                ) {
+                    ShimmerEffect()
+                }
+            }
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 4.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Box(
+                        modifier = Modifier
+                            .width(60.dp)
+                            .height(14.dp)
+                            .clip(RoundedCornerShape(4.dp))
+                    ) {
+                        ShimmerEffect()
+                    }
+                    Box(
+                        modifier = Modifier
+                            .width(40.dp)
+                            .height(10.dp)
+                            .clip(RoundedCornerShape(4.dp))
+                    ) {
+                        ShimmerEffect()
+                    }
+                }
+
+                Box(
+                    modifier = Modifier
+                        .size(36.dp)
+                        .clip(RoundedCornerShape(18.dp))
+                ) {
+                    ShimmerEffect()
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun AdminMedicineListShimmerItem() {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.1f))
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                modifier = Modifier.weight(1f)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(56.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                ) {
+                    ShimmerEffect()
+                }
+
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Box(
+                        modifier = Modifier
+                            .width(140.dp)
+                            .height(16.dp)
+                            .clip(RoundedCornerShape(4.dp))
+                    ) {
+                        ShimmerEffect()
+                    }
+                    Box(
+                        modifier = Modifier
+                            .width(180.dp)
+                            .height(12.dp)
+                            .clip(RoundedCornerShape(4.dp))
+                    ) {
+                        ShimmerEffect()
+                    }
+                    Box(
+                        modifier = Modifier
+                            .width(160.dp)
+                            .height(12.dp)
+                            .clip(RoundedCornerShape(4.dp))
+                    ) {
+                        ShimmerEffect()
+                    }
+                }
+            }
+
+            Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                Box(
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(RoundedCornerShape(20.dp))
+                ) {
+                    ShimmerEffect()
+                }
+                Box(
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(RoundedCornerShape(20.dp))
+                ) {
+                    ShimmerEffect()
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun AdminOrdersListShimmerItem() {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.12f))
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Box(
+                        modifier = Modifier
+                            .width(80.dp)
+                            .height(20.dp)
+                            .clip(RoundedCornerShape(4.dp))
+                    ) {
+                        ShimmerEffect()
+                    }
+                    Box(
+                        modifier = Modifier
+                            .width(60.dp)
+                            .height(18.dp)
+                            .clip(RoundedCornerShape(4.dp))
+                    ) {
+                        ShimmerEffect()
+                    }
+                }
+
+                Box(
+                    modifier = Modifier
+                        .width(150.dp)
+                        .height(16.dp)
+                        .clip(RoundedCornerShape(4.dp))
+                ) {
+                    ShimmerEffect()
+                }
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth(0.8f)
+                        .height(12.dp)
+                        .clip(RoundedCornerShape(4.dp))
+                ) {
+                    ShimmerEffect()
+                }
+
+                Box(
+                    modifier = Modifier
+                        .width(100.dp)
+                        .height(12.dp)
+                        .clip(RoundedCornerShape(4.dp))
+                ) {
+                    ShimmerEffect()
+                }
+            }
+
+            Column(horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Box(
+                    modifier = Modifier
+                        .width(70.dp)
+                        .height(20.dp)
+                        .clip(RoundedCornerShape(4.dp))
+                ) {
+                    ShimmerEffect()
+                }
+                Box(
+                    modifier = Modifier
+                        .width(100.dp)
+                        .height(36.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                ) {
+                    ShimmerEffect()
+                }
+            }
+        }
+    }
+}
+
+@Composable
 fun MedicineImage(
     imageUri: String?,
     category: String,
@@ -195,18 +449,37 @@ fun saveUriToLocalFile(context: android.content.Context, uri: android.net.Uri): 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppNavigation(viewModel: PharmacyViewModel) {
-    val currentUser by viewModel.currentUser.collectAsStateWithLifecycle()
+    var showSplash by remember { mutableStateOf(true) }
+
+    LaunchedEffect(Unit) {
+        delay(2500) // Premium 2.5s display window
+        showSplash = false
+    }
 
     AnimatedContent(
-        targetState = currentUser?.role,
+        targetState = showSplash,
         transitionSpec = {
-            fadeIn(animationSpec = tween(300)) togetherWith fadeOut(animationSpec = tween(300))
+            fadeIn(animationSpec = tween(500)) togetherWith fadeOut(animationSpec = tween(500))
         },
-        label = "AppScreenTransition"
-    ) { role ->
-        when (role) {
-            "admin" -> AdminDashboardScreen(viewModel)
-            else -> DoctorDashboardScreen(viewModel)
+        label = "SplashToAppTransition"
+    ) { isSplash ->
+        if (isSplash) {
+            DaimSplashScreen()
+        } else {
+            val currentUser by viewModel.currentUser.collectAsStateWithLifecycle()
+
+            AnimatedContent(
+                targetState = currentUser?.role,
+                transitionSpec = {
+                    fadeIn(animationSpec = tween(300)) togetherWith fadeOut(animationSpec = tween(300))
+                },
+                label = "AppScreenTransition"
+            ) { role ->
+                when (role) {
+                    "admin" -> AdminDashboardScreen(viewModel)
+                    else -> DoctorDashboardScreen(viewModel)
+                }
+            }
         }
     }
 }
@@ -361,22 +634,13 @@ fun LoginScreen(
                 verticalArrangement = Arrangement.spacedBy(20.dp)
             ) {
                 // Branding Header
-                Box(
+                Image(
+                    painter = painterResource(id = R.drawable.ic_daim_logo),
+                    contentDescription = "Daim Pharmacy Logo",
                     modifier = Modifier
-                        .size(72.dp)
-                        .background(
-                            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
-                            shape = RoundedCornerShape(18.dp)
-                        ),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.LocalPharmacy,
-                        contentDescription = "Daim Pharmacy",
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(40.dp)
-                    )
-                }
+                        .size(80.dp)
+                        .clip(RoundedCornerShape(16.dp))
+                )
 
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
@@ -587,12 +851,14 @@ fun CredentialRow(label: String, emailVal: String, passVal: String, onClick: () 
 fun DoctorDashboardScreen(viewModel: PharmacyViewModel) {
     val currentUser by viewModel.currentUser.collectAsStateWithLifecycle()
     val categories by viewModel.allCategories.collectAsStateWithLifecycle()
+    val isCategoriesLoading by viewModel.isCategoriesLoading.collectAsStateWithLifecycle()
     val filteredMedicines by viewModel.filteredMedicines.collectAsStateWithLifecycle()
     val selectedCategory by viewModel.selectedCategory.collectAsStateWithLifecycle()
     val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
     val cartItems by viewModel.cartItems.collectAsStateWithLifecycle()
     val doctorOrders by viewModel.doctorOrders.collectAsStateWithLifecycle()
     val cartTotal by viewModel.cartTotal.collectAsStateWithLifecycle(0.0)
+    val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
 
     val gridState = rememberLazyGridState()
 
@@ -700,19 +966,13 @@ fun DoctorDashboardScreen(viewModel: PharmacyViewModel) {
                         ),
                         title = {
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                Box(
+                                Image(
+                                    painter = painterResource(id = R.drawable.ic_daim_logo),
+                                    contentDescription = "Daim Pharmacy Logo",
                                     modifier = Modifier
-                                        .size(36.dp)
-                                        .background(color = Color(0xFFE8F5E9), shape = CircleShape),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.LocalPharmacy,
-                                        contentDescription = "Pharmacy",
-                                        tint = Color(0xFF2E7D32),
-                                        modifier = Modifier.size(20.dp)
-                                    )
-                                }
+                                        .size(40.dp)
+                                        .clip(RoundedCornerShape(8.dp))
+                                )
                                 Spacer(modifier = Modifier.width(10.dp))
                                 Column {
                                     Text(
@@ -741,6 +1001,35 @@ fun DoctorDashboardScreen(viewModel: PharmacyViewModel) {
                             }
                         },
                         actions = {
+                            val context = LocalContext.current
+                            val sharedPrefs = remember(context) { context.getSharedPreferences("user_session_pref", Context.MODE_PRIVATE) }
+                            val adminWhatsApp = remember(sharedPrefs) { sharedPrefs.getString("admin_whatsapp_number", ADMIN_WHATSAPP_NUMBER) ?: ADMIN_WHATSAPP_NUMBER }
+
+                            IconButton(
+                                onClick = {
+                                    val message = "Hello, I need help with my order on Daim Pharmacy app."
+                                    val uri = Uri.parse("https://wa.me/$adminWhatsApp?text=${Uri.encode(message)}")
+                                    try {
+                                        val intent = Intent(Intent.ACTION_VIEW, uri).apply {
+                                            setPackage("com.whatsapp")
+                                        }
+                                        context.startActivity(intent)
+                                    } catch (e: Exception) {
+                                        try {
+                                            val intent = Intent(Intent.ACTION_VIEW, uri)
+                                            context.startActivity(intent)
+                                        } catch (ex: Exception) {}
+                                    }
+                                },
+                                modifier = Modifier.padding(end = 4.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.HeadsetMic,
+                                    contentDescription = "Help & Support",
+                                    tint = Color(0xFF2E7D32)
+                                )
+                            }
+
                             if (currentUser != null) {
                                 var showProfileMenu by remember { mutableStateOf(false) }
                                 Box(modifier = Modifier.padding(end = 8.dp)) {
@@ -899,59 +1188,82 @@ fun DoctorDashboardScreen(viewModel: PharmacyViewModel) {
                                             )
                                         )
 
-                                        if (currentUser?.lastOrderItemsJson?.isNotEmpty() == true) {
-                                            Button(
-                                                onClick = {
-                                                    viewModel.repeatLastOrder()
-                                                    activeTab = "cart"
-                                                },
-                                                colors = ButtonDefaults.buttonColors(
-                                                    containerColor = Color(0xFFE8F5E9),
-                                                    contentColor = Color(0xFF2E7D32)
-                                                ),
-                                                shape = RoundedCornerShape(24.dp),
-                                                border = BorderStroke(1.dp, Color(0xFFC8E6C9)),
-                                                contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
-                                                modifier = Modifier.height(48.dp)
-                                            ) {
-                                                Icon(Icons.Default.Replay, null, modifier = Modifier.size(16.dp))
-                                                Spacer(modifier = Modifier.width(4.dp))
-                                                Text("Repeat Last", style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold)
-                                            }
-                                        }
+
                                     }
                                 }
 
                                 // Horizontal scrollable category filter chips (All, Tablets, Capsules, Syrups, Injections)
-                                LazyRow(
-                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 12.dp)
-                                ) {
-                                    item {
-                                        CategoryChip(
-                                            name = "All",
-                                            selected = selectedCategory == null,
-                                            onClick = { viewModel.selectCategory(null) }
-                                        )
+                                if (isCategoriesLoading) {
+                                    LazyRow(
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 12.dp)
+                                    ) {
+                                        item {
+                                            CategoryChip(
+                                                name = "All",
+                                                selected = selectedCategory == null,
+                                                onClick = { viewModel.selectCategory(null) }
+                                            )
+                                        }
+                                        items(4) {
+                                            Box(
+                                                modifier = Modifier
+                                                    .width(80.dp)
+                                                    .height(40.dp)
+                                                    .clip(RoundedCornerShape(20.dp))
+                                            ) {
+                                                ShimmerEffect()
+                                            }
+                                        }
                                     }
+                                } else {
+                                    LazyRow(
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 12.dp)
+                                    ) {
+                                        item {
+                                            CategoryChip(
+                                                name = "All",
+                                                selected = selectedCategory == null,
+                                                onClick = { viewModel.selectCategory(null) }
+                                            )
+                                        }
 
-                                    val predefinedOrder = listOf("Tablets", "Capsules", "Syrups", "Injections")
-                                    val sortedCategories = categories.sortedBy { predefinedOrder.indexOf(it.name) }
+                                        val predefinedOrder = listOf("Tablets", "Capsules", "Syrups", "Injections")
+                                        val sortedCategories = categories.sortedBy { predefinedOrder.indexOf(it.name) }
 
-                                    items(sortedCategories) { category ->
-                                        CategoryChip(
-                                            name = category.name,
-                                            selected = selectedCategory == category.name,
-                                            onClick = { viewModel.selectCategory(category.name) }
-                                        )
+                                        items(sortedCategories) { category ->
+                                            CategoryChip(
+                                                name = category.name,
+                                                selected = selectedCategory == category.name,
+                                                onClick = { viewModel.selectCategory(category.name) }
+                                            )
+                                        }
                                     }
                                 }
                             }
 
                             // 2-column Grid of Medicine Cards showing image placeholder, name, formula, price,
-                            if (filteredMedicines.isEmpty()) {
+                            if (isLoading) {
+                                LazyVerticalGrid(
+                                    columns = GridCells.Fixed(2),
+                                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                                    contentPadding = PaddingValues(bottom = if (cartItems.isNotEmpty()) 80.dp else 16.dp),
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .weight(1f)
+                                        .padding(horizontal = 16.dp)
+                                ) {
+                                    items(6) {
+                                        MedicineGridCardShimmer()
+                                    }
+                                }
+                            } else if (filteredMedicines.isEmpty()) {
                                 Box(
                                     modifier = Modifier
                                         .fillMaxWidth()
@@ -1074,7 +1386,16 @@ fun DoctorDashboardScreen(viewModel: PharmacyViewModel) {
                             }
                         }
                     } else {
-                        DoctorOrderHistoryScreen(orders = doctorOrders, viewModel = viewModel)
+                        DoctorOrderHistoryScreen(
+                            orders = doctorOrders,
+                            viewModel = viewModel,
+                            onNavigateToCart = { activeTab = "cart" },
+                            onShowSnackbar = { msg ->
+                                coroutineScope.launch {
+                                    snackbarHostState.showSnackbar(msg)
+                                }
+                            }
+                        )
                     }
                 }
             }
@@ -1890,7 +2211,12 @@ fun DoctorCartScreen(
 }
 
 @Composable
-fun DoctorOrderHistoryScreen(orders: List<OrderEntity>, viewModel: PharmacyViewModel) {
+fun DoctorOrderHistoryScreen(
+    orders: List<OrderEntity>,
+    viewModel: PharmacyViewModel,
+    onNavigateToCart: () -> Unit,
+    onShowSnackbar: (String) -> Unit
+) {
     val listState = rememberLazyListState()
 
     LaunchedEffect(listState) {
@@ -1913,93 +2239,225 @@ fun DoctorOrderHistoryScreen(orders: List<OrderEntity>, viewModel: PharmacyViewM
         }
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        Text("My Dispatched Orders", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+    Box(modifier = Modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Text("My Dispatched Orders", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
 
-        if (orders.isEmpty()) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f),
-                contentAlignment = Alignment.Center
-            ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Icon(Icons.AutoMirrored.Filled.ListAlt, null, modifier = Modifier.size(64.dp), tint = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.2f))
-                    Text("No orders placed yet", color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f))
+            if (orders.isEmpty()) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Icon(Icons.AutoMirrored.Filled.ListAlt, null, modifier = Modifier.size(64.dp), tint = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.2f))
+                        Text("No orders placed yet", color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f))
+                    }
                 }
-            }
-        } else {
-            LazyColumn(
-                state = listState,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-                contentPadding = PaddingValues(bottom = 80.dp)
-            ) {
-                items(orders) { order ->
-                    val itemsList = remember(order) { viewModel.jsonToCartItems(order.itemsJson) }
-                    val sdf = remember { SimpleDateFormat("dd MMM, hh:mm a", Locale.getDefault()) }
-
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.1f))
-                    ) {
-                        Column(
-                            modifier = Modifier.padding(16.dp),
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text("Order #${order.id}", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleMedium)
-                                OrderStatusBadge(order.status)
+            } else {
+                LazyColumn(
+                    state = listState,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                    contentPadding = PaddingValues(bottom = 80.dp)
+                ) {
+                    val lastOrder = orders.firstOrNull()
+                    if (lastOrder != null) {
+                        item {
+                            val itemsList = remember(lastOrder) { viewModel.jsonToCartItems(lastOrder.itemsJson) }
+                            val totalQuantity = itemsList.sumOf { it.quantity }
+                            val totalPrice = itemsList.sumOf { it.price * it.quantity }
+                            val dateStr = remember(lastOrder) {
+                                val sdf = SimpleDateFormat("dd MMM", Locale.getDefault())
+                                sdf.format(Date(lastOrder.createdAt))
                             }
+                            val summaryText = "$totalQuantity items • Rs. ${String.format("%.2f", totalPrice)} • $dateStr"
 
-                            Text(
-                                text = "Placed: ${sdf.format(Date(order.createdAt))}",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f)
-                            )
-
-                            Divider()
-
-                            // Render medicine names with quantities
-                            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                                for (item in itemsList) {
+                            Card(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(bottom = 4.dp)
+                                    .clip(RoundedCornerShape(16.dp))
+                                    .clickable {
+                                        viewModel.repeatLastOrder()
+                                        onShowSnackbar("Last order added to cart!")
+                                        onNavigateToCart()
+                                    },
+                                shape = RoundedCornerShape(16.dp),
+                                colors = CardDefaults.cardColors(containerColor = Color(0xFFE8F5E9)),
+                                border = BorderStroke(1.dp, Color(0xFFC8E6C9))
+                            ) {
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(16.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
                                     Row(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        horizontalArrangement = Arrangement.SpaceBetween
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        modifier = Modifier.weight(1f)
                                     ) {
-                                        Text("${item.medicineName} x ${item.quantity}", style = MaterialTheme.typography.bodyMedium)
-                                        Text("Rs. ${String.format("%.2f", item.price * item.quantity)}", style = MaterialTheme.typography.bodyMedium)
+                                        Box(
+                                            modifier = Modifier
+                                                .size(40.dp)
+                                                .background(Color(0xFFC8E6C9), shape = CircleShape),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Default.Replay,
+                                                contentDescription = "Repeat icon",
+                                                tint = Color(0xFF2E7D32),
+                                                modifier = Modifier.size(24.dp)
+                                            )
+                                        }
+
+                                        Spacer(modifier = Modifier.width(16.dp))
+
+                                        Column(
+                                            verticalArrangement = Arrangement.spacedBy(2.dp)
+                                        ) {
+                                            Text(
+                                                text = "Repeat Last Order",
+                                                style = MaterialTheme.typography.bodyLarge,
+                                                fontWeight = FontWeight.Bold,
+                                                color = Color(0xFF1E3A1E)
+                                            )
+                                            Text(
+                                                text = summaryText,
+                                                style = MaterialTheme.typography.bodySmall,
+                                                color = Color(0xFF556B2F)
+                                            )
+                                        }
+                                    }
+
+                                    Spacer(modifier = Modifier.width(8.dp))
+
+                                    Surface(
+                                        color = Color(0xFF2E7D32),
+                                        shape = RoundedCornerShape(20.dp),
+                                        modifier = Modifier.height(32.dp)
+                                    ) {
+                                        Row(
+                                            modifier = Modifier.padding(horizontal = 12.dp),
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Text(
+                                                "Reorder",
+                                                color = Color.White,
+                                                style = MaterialTheme.typography.labelMedium,
+                                                fontWeight = FontWeight.Bold
+                                            )
+                                            Spacer(modifier = Modifier.width(4.dp))
+                                            Icon(
+                                                imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                                                contentDescription = "Arrow Icon",
+                                                tint = Color.White,
+                                                modifier = Modifier.size(14.dp)
+                                            )
+                                        }
                                     }
                                 }
                             }
+                        }
+                    }
 
-                            Divider()
+                    items(orders) { order ->
+                        val itemsList = remember(order) { viewModel.jsonToCartItems(order.itemsJson) }
+                        val sdf = remember { SimpleDateFormat("dd MMM, hh:mm a", Locale.getDefault()) }
 
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.1f))
+                        ) {
+                            Column(
+                                modifier = Modifier.padding(16.dp),
+                                verticalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
-                                Text("Total Amount", fontWeight = FontWeight.Bold)
-                                Text("Rs. ${String.format("%.2f", itemsList.sumOf { it.price * it.quantity })}", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text("Order #${order.id}", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleMedium)
+                                    OrderStatusBadge(order.status)
+                                }
+
+                                Text(
+                                    text = "Placed: ${sdf.format(Date(order.createdAt))}",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f)
+                                )
+
+                                Divider()
+
+                                // Render medicine names with quantities
+                                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                    for (item in itemsList) {
+                                        Row(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            horizontalArrangement = Arrangement.SpaceBetween
+                                        ) {
+                                            Text("${item.medicineName} x ${item.quantity}", style = MaterialTheme.typography.bodyMedium)
+                                            Text("Rs. ${String.format("%.2f", item.price * item.quantity)}", style = MaterialTheme.typography.bodyMedium)
+                                        }
+                                    }
+                                }
+
+                                Divider()
+
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text("Total Amount", fontWeight = FontWeight.Bold)
+                                    Text("Rs. ${String.format("%.2f", itemsList.sumOf { it.price * it.quantity })}", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                                }
                             }
                         }
                     }
                 }
             }
         }
+
+        // Floating WhatsApp Need Help button
+        val context = LocalContext.current
+        val sharedPrefs = remember(context) { context.getSharedPreferences("user_session_pref", Context.MODE_PRIVATE) }
+        val adminWhatsApp = remember(sharedPrefs) { sharedPrefs.getString("admin_whatsapp_number", ADMIN_WHATSAPP_NUMBER) ?: ADMIN_WHATSAPP_NUMBER }
+
+        ExtendedFloatingActionButton(
+            onClick = {
+                val message = "Hello, I need help with my order on Daim Pharmacy app."
+                val uri = Uri.parse("https://wa.me/$adminWhatsApp?text=${Uri.encode(message)}")
+                try {
+                    val intent = Intent(Intent.ACTION_VIEW, uri).apply {
+                        setPackage("com.whatsapp")
+                    }
+                    context.startActivity(intent)
+                } catch (e: Exception) {
+                    try {
+                        val intent = Intent(Intent.ACTION_VIEW, uri)
+                        context.startActivity(intent)
+                    } catch (ex: Exception) {}
+                }
+            },
+            icon = { Icon(Icons.Default.HeadsetMic, contentDescription = "Help Icon", tint = Color.White) },
+            text = { Text("Need Help?", color = Color.White, fontWeight = FontWeight.Bold) },
+            containerColor = Color(0xFF2E7D32),
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(end = 16.dp, bottom = 16.dp)
+        )
     }
 }
 
@@ -2007,7 +2465,6 @@ fun DoctorOrderHistoryScreen(orders: List<OrderEntity>, viewModel: PharmacyViewM
 fun OrderStatusBadge(status: String) {
     val config = when (status.lowercase()) {
         "pending" -> BadgeConfig("Pending", Color(0xFFF59E0B), Color(0xFFFEF3C7))
-        "ready" -> BadgeConfig("Ready", Color(0xFF10B981), Color(0xFFD1FAE5))
         "completed" -> BadgeConfig("Completed", Color(0xFF3B82F6), Color(0xFFDBEAFE))
         else -> BadgeConfig(status, Color.Gray, Color.LightGray)
     }
@@ -2042,7 +2499,7 @@ fun AdminDashboardScreen(viewModel: PharmacyViewModel) {
 
     var activeAdminTab by remember { mutableStateOf("orders") } // "orders" | "inventory" | "categories" | "doctors"
     var selectedOrderForDetail by remember { mutableStateOf<OrderEntity?>(null) }
-    var showFirebaseConfigDialog by remember { mutableStateOf(false) }
+    var showWhatsAppConfigDialog by remember { mutableStateOf(false) }
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -2057,12 +2514,21 @@ fun AdminDashboardScreen(viewModel: PharmacyViewModel) {
                 ),
                 title = {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            imageVector = Icons.Default.LocalPharmacy,
-                            contentDescription = "Pharmacy",
-                            tint = Color.White,
-                            modifier = Modifier.size(24.dp)
-                        )
+                        Box(
+                            modifier = Modifier
+                                .size(40.dp)
+                                .background(Color.White, shape = RoundedCornerShape(8.dp))
+                                .padding(2.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Image(
+                                painter = painterResource(id = R.drawable.ic_daim_logo),
+                                contentDescription = "Daim Pharmacy Logo",
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .clip(RoundedCornerShape(6.dp))
+                             )
+                        }
                         Spacer(modifier = Modifier.width(10.dp))
                         Column {
                             Text(
@@ -2081,8 +2547,8 @@ fun AdminDashboardScreen(viewModel: PharmacyViewModel) {
                     }
                 },
                 actions = {
-                    IconButton(onClick = { showFirebaseConfigDialog = true }) {
-                        Icon(Icons.Default.CloudQueue, "Cloud Sync Settings", tint = Color.White)
+                    IconButton(onClick = { showWhatsAppConfigDialog = true }) {
+                        Icon(Icons.Default.HeadsetMic, "WhatsApp Help Settings", tint = Color.White)
                     }
                     IconButton(onClick = { viewModel.logout() }) {
                         Icon(Icons.Default.ExitToApp, "Logout", tint = Color.White)
@@ -2166,10 +2632,9 @@ fun AdminDashboardScreen(viewModel: PharmacyViewModel) {
             )
         }
 
-        if (showFirebaseConfigDialog) {
-            AdminFirebaseConfigDialog(
-                viewModel = viewModel,
-                onDismiss = { showFirebaseConfigDialog = false }
+        if (showWhatsAppConfigDialog) {
+            AdminWhatsAppConfigDialog(
+                onDismiss = { showWhatsAppConfigDialog = false }
             )
         }
     }
@@ -2204,13 +2669,39 @@ fun AdminOrdersScreen(
     }
 
     val sdf = remember { SimpleDateFormat("dd MMM, hh:mm a", Locale.getDefault()) }
+    val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
+    val isRefreshing by viewModel.isRefreshing.collectAsStateWithLifecycle()
+    val pullToRefreshState = rememberPullToRefreshState()
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+    PullToRefreshBox(
+        isRefreshing = isRefreshing,
+        onRefresh = { viewModel.refreshData() },
+        state = pullToRefreshState,
+        modifier = Modifier.fillMaxSize(),
+        indicator = {
+            PullToRefreshDefaults.Indicator(
+                state = pullToRefreshState,
+                isRefreshing = isRefreshing,
+                modifier = Modifier.align(Alignment.TopCenter),
+                color = Color(0xFF2E7D32)
+            )
+        }
     ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+        val todayStart = remember(orders) {
+            java.util.Calendar.getInstance().apply {
+                set(java.util.Calendar.HOUR_OF_DAY, 0)
+                set(java.util.Calendar.MINUTE, 0)
+                set(java.util.Calendar.SECOND, 0)
+                set(java.util.Calendar.MILLISECOND, 0)
+            }.timeInMillis
+        }
+
         // Stats Overview Row
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -2218,12 +2709,24 @@ fun AdminOrdersScreen(
         ) {
             AdminStatCard("Today's Orders", orders.size.toString(), Icons.Default.TrendingUp, modifier = Modifier.weight(1f))
             AdminStatCard("Pending", orders.count { it.status == "pending" }.toString(), Icons.Default.HourglassEmpty, modifier = Modifier.weight(1f), color = MaterialTheme.colorScheme.primary)
-            AdminStatCard("Ready", orders.count { it.status == "ready" }.toString(), Icons.Default.CheckCircle, modifier = Modifier.weight(1f), color = Color(0xFF10B981))
+            AdminStatCard("Completed", orders.count { it.status == "completed" && it.createdAt >= todayStart }.toString(), Icons.Default.CheckCircle, modifier = Modifier.weight(1f), color = Color(0xFF10B981))
         }
 
         Text("Active Dispatch Queue", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
 
-        if (orders.isEmpty()) {
+        if (isLoading) {
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f),
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+                contentPadding = PaddingValues(bottom = 80.dp)
+            ) {
+                items(4) {
+                    AdminOrdersListShimmerItem()
+                }
+            }
+        } else if (orders.isEmpty()) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -2294,14 +2797,32 @@ fun AdminOrdersScreen(
                                     color = MaterialTheme.colorScheme.primary,
                                     fontSize = 16.sp
                                 )
-                                Spacer(modifier = Modifier.height(4.dp))
-                                Icon(Icons.Default.ChevronRight, null, tint = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.3f))
+                                Spacer(modifier = Modifier.height(8.dp))
+                                if (order.status.lowercase() == "pending") {
+                                    Button(
+                                        onClick = { viewModel.updateOrderStatus(order.id, "completed") },
+                                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
+                                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF3B82F6)),
+                                        modifier = Modifier.height(36.dp)
+                                    ) {
+                                        Text("Mark Complete", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                                    }
+                                } else {
+                                    Text(
+                                        "Completed",
+                                        color = Color.Gray,
+                                        style = MaterialTheme.typography.bodySmall,
+                                        fontWeight = FontWeight.Bold,
+                                        modifier = Modifier.padding(end = 4.dp)
+                                    )
+                                }
                             }
                         }
                     }
                 }
             }
         }
+    }
     }
 }
 
@@ -2340,259 +2861,267 @@ fun AdminOrderDetailDialog(
     val sdf = remember { SimpleDateFormat("dd MMM yyyy, hh:mm a", Locale.getDefault()) }
     var printSuccessMsg by remember { mutableStateOf<String?>(null) }
 
-    Dialog(onDismissRequest = onDismiss) {
-        Card(
-            shape = RoundedCornerShape(24.dp),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
+    Dialog(
+        onDismissRequest = onDismiss,
+        properties = DialogProperties(usePlatformDefaultWidth = false)
+    ) {
+        BoxWithConstraints(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
         ) {
-            Column(
+            val maxDialogHeight = maxHeight * 0.9f
+            Card(
+                shape = RoundedCornerShape(24.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                 modifier = Modifier
-                    .padding(24.dp),
-                verticalArrangement = Arrangement.spacedBy(14.dp)
+                    .widthIn(max = 600.dp)
+                    .fillMaxWidth(0.95f)
+                    .heightIn(max = maxDialogHeight)
+                    .padding(16.dp)
             ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+                Column(
+                    modifier = Modifier
+                        .padding(24.dp)
+                        .fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(14.dp)
                 ) {
-                    Text("Order Execution", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                    IconButton(onClick = onDismiss, modifier = Modifier.size(28.dp)) {
-                        Icon(Icons.Default.Close, null)
-                    }
-                }
-
-                // Polished Thermal Pharmacy Slip Preview
-                Card(
-                    colors = CardDefaults.cardColors(containerColor = Color(0xFFF8FAFC)),
-                    border = BorderStroke(1.dp, Color(0xFFE2E8F0)),
-                    shape = RoundedCornerShape(12.dp),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .padding(16.dp)
-                            .fillMaxWidth(),
-                        verticalArrangement = Arrangement.spacedBy(6.dp)
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        // Header and Logo Placeholder
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.Center,
-                            verticalAlignment = Alignment.CenterVertically
+                        Text("Order Execution", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                        IconButton(onClick = onDismiss, modifier = Modifier.size(28.dp)) {
+                            Icon(Icons.Default.Close, null)
+                        }
+                    }
+
+                    // Polished Thermal Pharmacy Slip Preview
+                    Card(
+                        colors = CardDefaults.cardColors(containerColor = Color(0xFFF8FAFC)),
+                        border = BorderStroke(1.dp, Color(0xFFE2E8F0)),
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f, fill = false)
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .padding(16.dp)
+                                .fillMaxWidth(),
+                            verticalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
-                            Box(
-                                modifier = Modifier
-                                    .size(32.dp)
-                                    .background(Color(0xFF0F766E), shape = RoundedCornerShape(16.dp)),
-                                contentAlignment = Alignment.Center
+                            // Header and Logo Placeholder
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.Center,
+                                verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Icon(
-                                    imageVector = Icons.Default.Add,
-                                    contentDescription = null,
-                                    tint = Color.White,
-                                    modifier = Modifier.size(18.dp)
+                                Box(
+                                    modifier = Modifier
+                                        .size(32.dp)
+                                        .background(Color(0xFF0F766E), shape = RoundedCornerShape(16.dp)),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Add,
+                                        contentDescription = null,
+                                        tint = Color.White,
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                }
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    "DAIM PHARMACY",
+                                    style = MaterialTheme.typography.titleMedium.copy(
+                                        fontFamily = FontFamily.Monospace,
+                                        fontWeight = FontWeight.Bold,
+                                        letterSpacing = 0.5.sp
+                                    ),
+                                    color = Color.Black
                                 )
                             }
-                            Spacer(modifier = Modifier.width(8.dp))
+                            
                             Text(
-                                "DAIM PHARMACY",
-                                style = MaterialTheme.typography.titleMedium.copy(
-                                    fontFamily = FontFamily.Monospace,
-                                    fontWeight = FontWeight.Bold,
-                                    letterSpacing = 0.5.sp
-                                ),
+                                "ORDER PREPARATION SLIP",
+                                style = MaterialTheme.typography.labelSmall.copy(fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold),
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier.fillMaxWidth(),
+                                color = Color.DarkGray
+                            )
+                            Divider(color = Color(0xFFCBD5E1), thickness = 1.dp, modifier = Modifier.padding(vertical = 4.dp))
+
+                            Text("Order ID: #${order.id}", style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold), color = Color.Black)
+                            Text("Doctor:   Dr. ${order.doctorName}", style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace), color = Color.DarkGray)
+                            Text("Date:     ${sdf.format(Date(order.createdAt))}", style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace), color = Color.DarkGray)
+                            
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text("Status:   ", style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace), color = Color.DarkGray)
+                                Text(
+                                    order.status.uppercase(),
+                                    style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold),
+                                    color = when (order.status) {
+                                        "pending" -> Color(0xFFD97706)
+                                        "ready" -> Color(0xFF059669)
+                                        else -> Color(0xFF2563EB)
+                                    }
+                                )
+                            }
+
+                            Divider(color = Color(0xFFCBD5E1), thickness = 1.dp, modifier = Modifier.padding(vertical = 4.dp))
+
+                            // Detailed Itemized List
+                            Text(
+                                "ITEMS SUMMARY:",
+                                style = MaterialTheme.typography.labelSmall.copy(fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold),
                                 color = Color.Black
                             )
-                        }
-                        
-                        Text(
-                            "ORDER PREPARATION SLIP",
-                            style = MaterialTheme.typography.labelSmall.copy(fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold),
-                            textAlign = TextAlign.Center,
-                            modifier = Modifier.fillMaxWidth(),
-                            color = Color.DarkGray
-                        )
-                        Divider(color = Color(0xFFCBD5E1), thickness = 1.dp, modifier = Modifier.padding(vertical = 4.dp))
-
-                        Text("Order ID: #${order.id}", style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold), color = Color.Black)
-                        Text("Doctor:   Dr. ${order.doctorName}", style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace), color = Color.DarkGray)
-                        Text("Date:     ${sdf.format(Date(order.createdAt))}", style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace), color = Color.DarkGray)
-                        
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text("Status:   ", style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace), color = Color.DarkGray)
-                            Text(
-                                order.status.uppercase(),
-                                style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold),
-                                color = when (order.status) {
-                                    "pending" -> Color(0xFFD97706)
-                                    "ready" -> Color(0xFF059669)
-                                    else -> Color(0xFF2563EB)
-                                }
-                            )
-                        }
-
-                        Divider(color = Color(0xFFCBD5E1), thickness = 1.dp, modifier = Modifier.padding(vertical = 4.dp))
-
-                        // Detailed Itemized List
-                        Text(
-                            "ITEMS SUMMARY:",
-                            style = MaterialTheme.typography.labelSmall.copy(fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold),
-                            color = Color.Black
-                        )
-                        
-                        for (item in itemsList) {
-                            val itemTotal = item.price * item.quantity
+                            
+                            // Scrollable list container
                             Column(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(vertical = 2.dp)
+                                    .weight(1f, fill = false)
+                                    .verticalScroll(rememberScrollState()),
+                                verticalArrangement = Arrangement.spacedBy(4.dp)
                             ) {
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceBetween
-                                ) {
-                                    Text(
-                                        item.medicineName,
-                                        style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold),
-                                        color = Color.Black,
-                                        modifier = Modifier.weight(1f)
-                                    )
-                                    Text(
-                                        "Rs. ${String.format(Locale.US, "%.2f", itemTotal)}",
-                                        style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold),
-                                        color = Color.Black
-                                    )
-                                }
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceBetween
-                                ) {
-                                    Text(
-                                        "  Formula: ${item.formula}",
-                                        style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace, fontSize = 10.sp),
-                                        color = Color.Gray,
-                                        modifier = Modifier.weight(1f)
-                                    )
-                                    Text(
-                                        "  ${item.quantity} x Rs. ${String.format(Locale.US, "%.2f", item.price)}",
-                                        style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace, fontSize = 10.sp),
-                                        color = Color.Gray
-                                    )
+                                for (item in itemsList) {
+                                    val itemTotal = item.price * item.quantity
+                                    Column(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(vertical = 2.dp)
+                                    ) {
+                                        Row(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            horizontalArrangement = Arrangement.SpaceBetween
+                                        ) {
+                                            Text(
+                                                item.medicineName,
+                                                style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold),
+                                                color = Color.Black,
+                                                modifier = Modifier.weight(1f)
+                                            )
+                                            Text(
+                                                "Rs. ${String.format(Locale.US, "%.2f", itemTotal)}",
+                                                style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold),
+                                                color = Color.Black
+                                            )
+                                        }
+                                        Row(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            horizontalArrangement = Arrangement.SpaceBetween
+                                        ) {
+                                            Text(
+                                                "  Formula: ${item.formula}",
+                                                style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace, fontSize = 10.sp),
+                                                color = Color.Gray,
+                                                modifier = Modifier.weight(1f)
+                                            )
+                                            Text(
+                                                "  ${item.quantity} x Rs. ${String.format(Locale.US, "%.2f", item.price)}",
+                                                style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace, fontSize = 10.sp),
+                                                color = Color.Gray
+                                            )
+                                        }
+                                    }
                                 }
                             }
-                        }
 
-                        Divider(color = Color(0xFFCBD5E1), thickness = 1.dp, modifier = Modifier.padding(vertical = 4.dp))
-                        
-                        Row(
+                            Divider(color = Color(0xFFCBD5E1), thickness = 1.dp, modifier = Modifier.padding(vertical = 4.dp))
+                            
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text(
+                                    "TOTAL AMOUNT:",
+                                    style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold),
+                                    color = Color.Black
+                                )
+                                Text(
+                                    "Rs. ${String.format(Locale.US, "%.2f", itemsList.sumOf { it.price * it.quantity })}",
+                                    style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold),
+                                    color = Color.Black
+                                )
+                            }
+                        }
+                    }
+
+                    if (order.status.lowercase() == "pending") {
+                        // Interactive Quick Actions (Pending -> Completed)
+                        Text("Update Order Progress", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodyMedium)
+
+                        Button(
+                            onClick = { viewModel.updateOrderStatus(order.id, "completed") },
                             modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF3B82F6))
                         ) {
-                            Text(
-                                "TOTAL AMOUNT:",
-                                style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold),
-                                color = Color.Black
-                            )
-                            Text(
-                                "Rs. ${String.format(Locale.US, "%.2f", itemsList.sumOf { it.price * it.quantity })}",
-                                style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold),
-                                color = Color.Black
-                            )
+                            Icon(Icons.Default.DoneAll, null, modifier = Modifier.size(16.dp))
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text("Mark as Completed")
                         }
                     }
-                }
 
-                // Interactive Quick Actions (Pending -> Ready -> Done)
-                Text("Update Order Progress", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodyMedium)
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Button(
-                        onClick = { viewModel.updateOrderStatus(order.id, "ready") },
-                        enabled = order.status == "pending",
-                        modifier = Modifier.weight(1f),
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF10B981))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        Icon(Icons.Default.Check, null, modifier = Modifier.size(16.dp))
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text("Ready")
+                        // Actual native Print Slip button
+                        Button(
+                            onClick = {
+                                try {
+                                    PrintHelper.printSlip(
+                                        context,
+                                        order,
+                                        itemsList,
+                                        sdf.format(Date(order.createdAt))
+                                    )
+                                    printSuccessMsg = "Sent to System Print Spooler!"
+                                } catch (e: Exception) {
+                                    printSuccessMsg = "Print Error: ${e.localizedMessage}"
+                                }
+                            },
+                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Icon(Icons.Default.Print, null, modifier = Modifier.size(16.dp))
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text("Print Slip")
+                        }
+
+                        // Share as Text button
+                        OutlinedButton(
+                            onClick = {
+                                try {
+                                    PrintHelper.shareOrderAsText(
+                                        context,
+                                        order,
+                                        itemsList,
+                                        sdf.format(Date(order.createdAt))
+                                    )
+                                } catch (e: Exception) {
+                                    printSuccessMsg = "Share Error: ${e.localizedMessage}"
+                                }
+                            },
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Icon(Icons.Default.Share, null, modifier = Modifier.size(16.dp))
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text("Share Text")
+                        }
                     }
 
-                    Button(
-                        onClick = { viewModel.updateOrderStatus(order.id, "completed") },
-                        enabled = order.status == "ready",
-                        modifier = Modifier.weight(1f),
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF3B82F6))
-                    ) {
-                        Icon(Icons.Default.DoneAll, null, modifier = Modifier.size(16.dp))
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text("Completed")
+                    printSuccessMsg?.let { msg ->
+                        Text(
+                            text = msg,
+                            color = MaterialTheme.colorScheme.primary,
+                            style = MaterialTheme.typography.bodySmall,
+                            fontWeight = FontWeight.SemiBold,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.fillMaxWidth()
+                        )
                     }
-                }
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    // Actual native Print Slip button
-                    Button(
-                        onClick = {
-                            try {
-                                PrintHelper.printSlip(
-                                    context,
-                                    order,
-                                    itemsList,
-                                    sdf.format(Date(order.createdAt))
-                                )
-                                printSuccessMsg = "Sent to System Print Spooler!"
-                            } catch (e: Exception) {
-                                printSuccessMsg = "Print Error: ${e.localizedMessage}"
-                            }
-                        },
-                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Icon(Icons.Default.Print, null, modifier = Modifier.size(16.dp))
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Text("Print Slip")
-                    }
-
-                    // Share as Text button
-                    OutlinedButton(
-                        onClick = {
-                            try {
-                                PrintHelper.shareOrderAsText(
-                                    context,
-                                    order,
-                                    itemsList,
-                                    sdf.format(Date(order.createdAt))
-                                )
-                            } catch (e: Exception) {
-                                printSuccessMsg = "Share Error: ${e.localizedMessage}"
-                            }
-                        },
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Icon(Icons.Default.Share, null, modifier = Modifier.size(16.dp))
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Text("Share Text")
-                    }
-                }
-
-                printSuccessMsg?.let { msg ->
-                    Text(
-                        text = msg,
-                        color = MaterialTheme.colorScheme.primary,
-                        style = MaterialTheme.typography.bodySmall,
-                        fontWeight = FontWeight.SemiBold,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.fillMaxWidth()
-                    )
                 }
             }
         }
@@ -2632,108 +3161,147 @@ fun AdminInventoryScreen(
 
     var showAddDialog by remember { mutableStateOf(false) }
     var selectedMedicineForEdit by remember { mutableStateOf<MedicineEntity?>(null) }
+    val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
+    val isRefreshing by viewModel.isRefreshing.collectAsStateWithLifecycle()
+    val pullToRefreshState = rememberPullToRefreshState()
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text("Medicine Master Database", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-            Button(
-                onClick = { showAddDialog = true },
-                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
-                contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp)
-            ) {
-                Icon(Icons.Default.Add, null)
-                Spacer(modifier = Modifier.width(4.dp))
-                Text("Add New")
-            }
+    PullToRefreshBox(
+        isRefreshing = isRefreshing,
+        onRefresh = { viewModel.refreshData() },
+        state = pullToRefreshState,
+        modifier = Modifier.fillMaxSize(),
+        indicator = {
+            PullToRefreshDefaults.Indicator(
+                state = pullToRefreshState,
+                isRefreshing = isRefreshing,
+                modifier = Modifier.align(Alignment.TopCenter),
+                color = Color(0xFF2E7D32)
+            )
         }
-
-        LazyColumn(
-            state = listState,
+    ) {
+        Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-            contentPadding = PaddingValues(bottom = 80.dp)
+                .fillMaxSize(),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            items(medicines) { med ->
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.1f))
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Medicine Master Database",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.weight(1f)
+                )
+                Button(
+                    onClick = { showAddDialog = true },
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
+                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp)
                 ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(12.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(12.dp),
-                            modifier = Modifier.weight(1f)
+                    Icon(Icons.Default.Add, null)
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text("Add New")
+                }
+            }
+
+            if (isLoading) {
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
+                        .padding(horizontal = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    contentPadding = PaddingValues(bottom = 80.dp)
+                ) {
+                    items(6) {
+                        AdminMedicineListShimmerItem()
+                    }
+                }
+            } else {
+                LazyColumn(
+                    state = listState,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
+                        .padding(horizontal = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    contentPadding = PaddingValues(bottom = 80.dp)
+                ) {
+                    items(medicines) { med ->
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.1f))
                         ) {
-                            MedicineImage(
-                                imageUri = med.imageUri,
-                                category = med.category,
-                                contentDescription = med.name,
+                            Row(
                                 modifier = Modifier
-                                    .size(56.dp)
-                                    .clip(RoundedCornerShape(8.dp)),
-                                showCircle = false,
-                                iconSize = 28.dp
-                            )
+                                    .fillMaxWidth()
+                                    .padding(12.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                                    modifier = Modifier.weight(1f)
+                                ) {
+                                    MedicineImage(
+                                        imageUri = med.imageUri,
+                                        category = med.category,
+                                        contentDescription = med.name,
+                                        modifier = Modifier
+                                            .size(56.dp)
+                                            .clip(RoundedCornerShape(8.dp)),
+                                        showCircle = false,
+                                        iconSize = 28.dp
+                                    )
 
-                            Column {
-                                Text(med.name, fontWeight = FontWeight.Bold)
-                                Text("Formula: ${med.formula}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f))
-                                Text("Category: ${med.category} | Price: Rs. ${med.price}", style = MaterialTheme.typography.bodySmall)
-                            }
-                        }
+                                    Column {
+                                        Text(med.name, fontWeight = FontWeight.Bold)
+                                        Text("Formula: ${med.formula}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f))
+                                        Text("Category: ${med.category} | Price: Rs. ${med.price}", style = MaterialTheme.typography.bodySmall)
+                                    }
+                                }
 
-                        Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                            IconButton(onClick = { selectedMedicineForEdit = med }) {
-                                Icon(Icons.Default.Edit, null, tint = MaterialTheme.colorScheme.primary)
-                            }
-                            IconButton(onClick = { viewModel.deleteMedicine(med) }) {
-                                Icon(Icons.Default.Delete, null, tint = MaterialTheme.colorScheme.error)
+                                Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                                    IconButton(onClick = { selectedMedicineForEdit = med }) {
+                                        Icon(Icons.Default.Edit, null, tint = MaterialTheme.colorScheme.primary)
+                                    }
+                                    IconButton(onClick = { viewModel.deleteMedicine(med) }) {
+                                        Icon(Icons.Default.Delete, null, tint = MaterialTheme.colorScheme.error)
+                                    }
+                                }
                             }
                         }
                     }
                 }
             }
-        }
 
-        if (showAddDialog) {
-            AddMedicineDialog(
-                categories = categories,
-                onDismiss = { showAddDialog = false },
-                onAdd = { name, formula, cat, price, stock, imageUri ->
-                    viewModel.addMedicine(name, formula, cat, price, stock, imageUri)
-                    showAddDialog = false
-                }
-            )
-        }
+            if (showAddDialog) {
+                AddMedicineDialog(
+                    categories = categories,
+                    onDismiss = { showAddDialog = false },
+                    onAdd = { name, formula, cat, price, stock, imageUri ->
+                        viewModel.addMedicine(name, formula, cat, price, stock, imageUri)
+                        showAddDialog = false
+                    }
+                )
+            }
 
-        selectedMedicineForEdit?.let { med ->
-            EditMedicineDialog(
-                medicine = med,
-                categories = categories,
-                onDismiss = { selectedMedicineForEdit = null },
-                onSave = { updated ->
-                    viewModel.updateMedicine(updated)
-                    selectedMedicineForEdit = null
-                }
-            )
+            selectedMedicineForEdit?.let { med ->
+                EditMedicineDialog(
+                    medicine = med,
+                    categories = categories,
+                    onDismiss = { selectedMedicineForEdit = null },
+                    onSave = { updated ->
+                        viewModel.updateMedicine(updated)
+                        selectedMedicineForEdit = null
+                    }
+                )
+            }
         }
     }
 }
@@ -3130,16 +3698,21 @@ fun AdminCategoriesScreen(
 
     Column(
         modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
+            .fillMaxSize(),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text("Medicine Categories", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+            Text(
+                text = "Medicine Categories",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.weight(1f)
+            )
             Button(
                 onClick = { showAddDialog = true },
                 colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
@@ -3154,7 +3727,8 @@ fun AdminCategoriesScreen(
             state = listState,
             modifier = Modifier
                 .fillMaxWidth()
-                .weight(1f),
+                .weight(1f)
+                .padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
             contentPadding = PaddingValues(bottom = 80.dp)
         ) {
@@ -3291,19 +3865,20 @@ fun AdminDoctorsScreen(
 
     Column(
         modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
+            .fillMaxSize(),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
                 text = "Accounts Management",
                 style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.weight(1f)
             )
             Button(
                 onClick = {
@@ -3323,7 +3898,9 @@ fun AdminDoctorsScreen(
 
         // Filter Tabs
         Row(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             val filters = listOf(
@@ -3345,7 +3922,8 @@ fun AdminDoctorsScreen(
             state = listState,
             modifier = Modifier
                 .fillMaxWidth()
-                .weight(1f),
+                .weight(1f)
+                .padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp),
             contentPadding = PaddingValues(bottom = 80.dp)
         ) {
@@ -3723,17 +4301,15 @@ fun AdminDoctorsScreen(
 
 
 
-@Composable
-fun AdminFirebaseConfigDialog(viewModel: PharmacyViewModel, onDismiss: () -> Unit) {
-    val context = LocalContext.current
-    val currentConfig = remember { FirebaseSyncHelper.getFirebaseConfig(context) }
-    val initialEnabled = remember { FirebaseSyncHelper.isFirebaseEnabled(context) }
 
-    var isEnabled by remember { mutableStateOf(initialEnabled) }
-    var projectId by remember { mutableStateOf(currentConfig.projectId) }
-    var apiKey by remember { mutableStateOf(currentConfig.apiKey) }
-    var storageBucket by remember { mutableStateOf(currentConfig.storageBucket) }
-    var applicationId by remember { mutableStateOf(currentConfig.applicationId) }
+
+@Composable
+fun AdminWhatsAppConfigDialog(onDismiss: () -> Unit) {
+    val context = LocalContext.current
+    val sharedPrefs = remember(context) { context.getSharedPreferences("user_session_pref", Context.MODE_PRIVATE) }
+    val initialNumber = remember(sharedPrefs) { sharedPrefs.getString("admin_whatsapp_number", ADMIN_WHATSAPP_NUMBER) ?: ADMIN_WHATSAPP_NUMBER }
+
+    var number by remember { mutableStateOf(initialNumber) }
 
     Dialog(onDismissRequest = onDismiss) {
         Card(
@@ -3744,8 +4320,7 @@ fun AdminFirebaseConfigDialog(viewModel: PharmacyViewModel, onDismiss: () -> Uni
         ) {
             Column(
                 modifier = Modifier
-                    .padding(24.dp)
-                    .verticalScroll(rememberScrollState()),
+                    .padding(24.dp),
                 verticalArrangement = Arrangement.spacedBy(14.dp)
             ) {
                 Row(
@@ -3754,7 +4329,7 @@ fun AdminFirebaseConfigDialog(viewModel: PharmacyViewModel, onDismiss: () -> Uni
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text(
-                        "Cloud Sync Settings",
+                        "WhatsApp Help Settings",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold
                     )
@@ -3764,74 +4339,27 @@ fun AdminFirebaseConfigDialog(viewModel: PharmacyViewModel, onDismiss: () -> Uni
                 }
 
                 Text(
-                    "Configure Firebase to sync products, categories, and images automatically to all doctors' devices in real-time.",
+                    "Update the WhatsApp support number that doctors will contact for support and orders.",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
-                
+
                 Text(
-                    "پروڈکٹس اور تصاویر تمام ڈاکٹرز کے موبائل میں خودکار طور پر شیئر کرنے کے لیے فائر بیس سیٹ اپ کریں۔",
+                    "وہ واٹس ایپ نمبر درج کریں جس پر ڈاکٹرز آپ سے رابطہ کر سکیں۔ نمبر میں کنٹری کوڈ شامل کریں (مثال کے طور پر 923109551558)۔ پلس (+) یا سپیس استعمال نہ کریں۔",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.primary,
                     fontWeight = FontWeight.Medium
                 )
 
-                Divider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f))
-
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text(
-                        "Enable Cloud Sync",
-                        fontWeight = FontWeight.Bold,
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-                    Switch(
-                        checked = isEnabled,
-                        onCheckedChange = { isEnabled = it }
-                    )
-                }
-
                 OutlinedTextField(
-                    value = projectId,
-                    onValueChange = { projectId = it },
-                    label = { Text("Firebase Project ID") },
-                    placeholder = { Text("e.g. daim-pharmacy-1234") },
+                    value = number,
+                    onValueChange = { input ->
+                        number = input.filter { it.isDigit() }
+                    },
+                    label = { Text("WhatsApp Contact Number") },
+                    placeholder = { Text("e.g. 923109551558") },
                     modifier = Modifier.fillMaxWidth(),
-                    singleLine = true,
-                    enabled = isEnabled
-                )
-
-                OutlinedTextField(
-                    value = apiKey,
-                    onValueChange = { apiKey = it },
-                    label = { Text("API Key") },
-                    placeholder = { Text("AIzaSy...") },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true,
-                    enabled = isEnabled
-                )
-
-                OutlinedTextField(
-                    value = storageBucket,
-                    onValueChange = { storageBucket = it },
-                    label = { Text("Storage Bucket") },
-                    placeholder = { Text("e.g. daim-pharmacy-1234.appspot.com") },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true,
-                    enabled = isEnabled
-                )
-
-                OutlinedTextField(
-                    value = applicationId,
-                    onValueChange = { applicationId = it },
-                    label = { Text("Application ID (App ID)") },
-                    placeholder = { Text("1:1234567:android:abcd5678") },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true,
-                    enabled = isEnabled
+                    singleLine = true
                 )
 
                 Row(
@@ -3845,23 +4373,12 @@ fun AdminFirebaseConfigDialog(viewModel: PharmacyViewModel, onDismiss: () -> Uni
                     Spacer(modifier = Modifier.width(8.dp))
                     Button(
                         onClick = {
-                            val config = FirebaseConfig(
-                                projectId = projectId,
-                                apiKey = apiKey,
-                                storageBucket = storageBucket,
-                                applicationId = applicationId
-                            )
-                            FirebaseSyncHelper.saveFirebaseConfig(context, config)
-                            FirebaseSyncHelper.setFirebaseEnabled(context, isEnabled)
-                            if (isEnabled) {
-                                FirebaseSyncHelper.initializeFirebase(context)
-                                viewModel.triggerFirebaseSync()
-                            }
+                            sharedPrefs.edit().putString("admin_whatsapp_number", number).apply()
                             onDismiss()
                         },
                         shape = RoundedCornerShape(12.dp)
                     ) {
-                        Text("Save & Sync")
+                        Text("Save")
                     }
                 }
             }

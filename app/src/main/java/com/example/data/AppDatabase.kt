@@ -10,14 +10,13 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 @Database(
-    entities = [UserEntity::class, MedicineEntity::class, CategoryEntity::class, OrderEntity::class],
-    version = 4,
+    entities = [UserEntity::class, MedicineEntity::class, OrderEntity::class],
+    version = 5,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract fun userDao(): UserDao
     abstract fun medicineDao(): MedicineDao
-    abstract fun categoryDao(): CategoryDao
     abstract fun orderDao(): OrderDao
 
     companion object {
@@ -73,21 +72,9 @@ abstract class AppDatabase : RoomDatabase() {
 
         suspend fun populateDatabase(db: AppDatabase) {
             val userDao = db.userDao()
-            val categoryDao = db.categoryDao()
             val medicineDao = db.medicineDao()
 
-            // 1. Seed Categories
-            val categories = listOf(
-                CategoryEntity(name = "Tablets", iconName = "medication"),
-                CategoryEntity(name = "Syrups", iconName = "liquor"),
-                CategoryEntity(name = "Injections", iconName = "vaccines"),
-                CategoryEntity(name = "Capsules", iconName = "medical_services")
-            )
-            for (category in categories) {
-                categoryDao.insertCategory(category)
-            }
-
-            // 2. Seed Accounts
+            // 1. Seed Accounts
             // Admin account
             userDao.insertUser(
                 UserEntity(

@@ -1,11 +1,11 @@
 package com.example.data
 
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.asStateFlow
 
 class PharmacyRepository(private val db: AppDatabase) {
     private val userDao = db.userDao()
     private val medicineDao = db.medicineDao()
-    private val categoryDao = db.categoryDao()
     private val orderDao = db.orderDao()
 
     // --- Users ---
@@ -34,13 +34,46 @@ class PharmacyRepository(private val db: AppDatabase) {
     suspend fun deleteMedicine(medicine: MedicineEntity) = medicineDao.deleteMedicine(medicine)
 
     // --- Categories ---
-    val allCategories: Flow<List<CategoryEntity>> = categoryDao.getAllCategories()
-    
-    suspend fun insertCategory(category: CategoryEntity) = categoryDao.insertCategory(category)
-    
-    suspend fun updateCategory(category: CategoryEntity) = categoryDao.updateCategory(category)
-    
-    suspend fun deleteCategory(category: CategoryEntity) = categoryDao.deleteCategory(category)
+    private val _allCategories = kotlinx.coroutines.flow.MutableStateFlow<List<CategoryEntity>>(emptyList())
+    val allCategories: Flow<List<CategoryEntity>> = _allCategories.asStateFlow()
+
+    private val _isCategoriesLoading = kotlinx.coroutines.flow.MutableStateFlow(true)
+    val isCategoriesLoading: Flow<Boolean> = _isCategoriesLoading.asStateFlow()
+
+    fun updateCategories(list: List<CategoryEntity>) {
+        _allCategories.value = list.sortedBy { it.name }
+    }
+
+    fun setCategoriesLoading(loading: Boolean) {
+        _isCategoriesLoading.value = loading
+    }
+
+    suspend fun insertCategory(category: CategoryEntity) {
+        try {
+            val firestore = com.google.firebase.firestore.FirebaseFirestore.getInstance()
+            val data = mapOf(
+                "id" to category.id,
+                "name" to category.name,
+                "iconName" to category.iconName
+            )
+            firestore.collection("categories").document(category.id).set(data)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    suspend fun updateCategory(category: CategoryEntity) {
+        insertCategory(category)
+    }
+
+    suspend fun deleteCategory(category: CategoryEntity) {
+        try {
+            val firestore = com.google.firebase.firestore.FirebaseFirestore.getInstance()
+            firestore.collection("categories").document(category.id).delete()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
 
     // --- Orders ---
     val allOrders: Flow<List<OrderEntity>> = orderDao.getAllOrders()
