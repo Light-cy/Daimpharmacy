@@ -12,6 +12,14 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.withContext
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.RequestBody.Companion.toRequestBody
+import org.json.JSONObject
+import java.io.InputStream
 import java.util.UUID
 import kotlin.coroutines.resume
 
@@ -63,34 +71,45 @@ object FirebaseSyncHelper {
     }
 
     suspend fun uploadMedicineImage(context: Context, localUriStr: String): String? {
-        if (!initializeFirebase(context)) return null
-        
         // If it is already a web URL, don't upload it again
         if (localUriStr.startsWith("http://") || localUriStr.startsWith("https://")) {
             return localUriStr
         }
 
-        val fileUri = Uri.parse(localUriStr)
-        return suspendCancellableCoroutine { continuation ->
+        return withContext(Dispatchers.IO) {
             try {
-                val storage = FirebaseStorage.getInstance()
-                val filename = "medicines/${UUID.randomUUID()}.jpg"
-                val ref = storage.reference.child(filename)
+                val inputStream: InputStream? = if (localUriStr.startsWith("/")) {
+                    val file = java.io.File(localUriStr)
+                    if (file.exists()) java.io.FileInputStream(file) else null
+                } else {
+                    val fileUri = Uri.parse(localUriStr)
+                    context.contentResolver.openInputStream(fileUri)
+                }
                 
-                ref.putFile(fileUri)
-                    .addOnSuccessListener {
-                        ref.downloadUrl.addOnSuccessListener { downloadUrl ->
-                            continuation.resume(downloadUrl.toString())
-                        }.addOnFailureListener {
-                            continuation.resume(null)
-                        }
-                    }
-                    .addOnFailureListener {
-                        continuation.resume(null)
-                    }
+                val bytes = inputStream?.use { it.readBytes() } ?: return@withContext null
+
+                val client = OkHttpClient()
+                val mediaType = "image/jpeg".toMediaTypeOrNull()
+                val requestBody = MultipartBody.Builder()
+                    .setType(MultipartBody.FORM)
+                    .addFormDataPart("image", "image.jpg", bytes.toRequestBody(mediaType))
+                    .build()
+
+                val request = Request.Builder()
+                    .url("https://api.imgbb.com/1/upload?key=066180f5bd304f6f3430fc5f84944507")
+                    .post(requestBody)
+                    .build()
+
+                client.newCall(request).execute().use { response ->
+                    if (!response.isSuccessful) return@withContext null
+                    val bodyStr = response.body?.string() ?: return@withContext null
+                    val json = JSONObject(bodyStr)
+                    val dataObj = json.optJSONObject("data") ?: return@withContext null
+                    dataObj.optString("url")
+                }
             } catch (e: Exception) {
                 e.printStackTrace()
-                continuation.resume(null)
+                null
             }
         }
     }

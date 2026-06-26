@@ -773,79 +773,8 @@ fun LoginScreen(
                 }
 
                 Spacer(modifier = Modifier.height(8.dp))
-
-                // Demo Credentials helper card
-                Card(
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.05f)),
-                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Column(
-                        modifier = Modifier.padding(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(10.dp)
-                    ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(
-                                imageVector = Icons.Default.Info,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.size(18.dp)
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(
-                                "Demo Credentials for Testing",
-                                style = MaterialTheme.typography.titleSmall,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.primary
-                            )
-                        }
-
-                        Divider(color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f))
-
-                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                            CredentialRow("Doctor Account 1:", "dr.ahmed@daim.com", "doctor123") {
-                                email = "dr.ahmed@daim.com"
-                                password = "doctor123"
-                                selectedRole = "doctor"
-                            }
-                            CredentialRow("Doctor Account 2:", "dr.fatima@daim.com", "doctor123") {
-                                email = "dr.fatima@daim.com"
-                                password = "doctor123"
-                                selectedRole = "doctor"
-                            }
-                            CredentialRow("Admin / Staff:", "admin@daim.com", "admin123") {
-                                email = "admin@daim.com"
-                                password = "admin123"
-                                selectedRole = "admin"
-                            }
-                        }
-                    }
-                }
             }
         }
-    }
-}
-
-@Composable
-fun CredentialRow(label: String, emailVal: String, passVal: String, onClick: () -> Unit) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onClick() }
-            .padding(vertical = 2.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Column {
-            Text(label, style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold)
-            Text("Email: $emailVal | Pass: $passVal", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f))
-        }
-        Text(
-            "Use",
-            style = MaterialTheme.typography.bodySmall,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.primary
-        )
     }
 }
 
@@ -1154,9 +1083,15 @@ fun DoctorDashboardScreen(viewModel: PharmacyViewModel) {
                                     enter = slideInVertically(
                                         initialOffsetY = { -it },
                                         animationSpec = tween(300, easing = FastOutSlowInEasing)
+                                    ) + expandVertically(
+                                        expandFrom = Alignment.Top,
+                                        animationSpec = tween(300, easing = FastOutSlowInEasing)
                                     ) + fadeIn(tween(200)),
                                     exit = slideOutVertically(
                                         targetOffsetY = { -it },
+                                        animationSpec = tween(300, easing = FastOutSlowInEasing)
+                                    ) + shrinkVertically(
+                                        shrinkTowards = Alignment.Top,
                                         animationSpec = tween(300, easing = FastOutSlowInEasing)
                                     ) + fadeOut(tween(200))
                                 ) {
@@ -1164,6 +1099,8 @@ fun DoctorDashboardScreen(viewModel: PharmacyViewModel) {
                                     Row(
                                         modifier = Modifier
                                             .fillMaxWidth()
+                                            .widthIn(max = 600.dp)
+                                            .align(Alignment.CenterHorizontally)
                                             .padding(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 4.dp),
                                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                                         verticalAlignment = Alignment.CenterVertically
@@ -1171,7 +1108,7 @@ fun DoctorDashboardScreen(viewModel: PharmacyViewModel) {
                                         OutlinedTextField(
                                             value = searchQuery,
                                             onValueChange = { viewModel.setSearchQuery(it) },
-                                            placeholder = { Text("Search by medicine or formula...", color = Color(0xFF2E7D32).copy(alpha = 0.5f)) },
+                                            placeholder = { Text("Search", color = Color(0xFF2E7D32).copy(alpha = 0.5f)) },
                                             leadingIcon = { Icon(Icons.Default.Search, null, tint = Color(0xFF2E7D32)) },
                                             trailingIcon = {
                                                 if (searchQuery.isNotEmpty()) {
