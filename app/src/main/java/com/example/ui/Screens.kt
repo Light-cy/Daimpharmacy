@@ -19,6 +19,11 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.ui.graphics.Brush
@@ -1484,13 +1489,15 @@ fun MedicineGridCard(
                         color = Color(0xFF2E7D32),
                         fontSize = 14.sp
                     )
-                    Text(
-                        text = if (medicine.stock == 0) "Out of Stock" else "Stock: ${medicine.stock}",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = if (medicine.stock == 0) Color.Red else if (medicine.stock < 10) Color(0xFFD84315) else Color.Gray,
-                        fontSize = 11.sp,
-                        fontWeight = if (medicine.stock < 10) FontWeight.Medium else FontWeight.Normal
-                    )
+                    if (medicine.stock == 0) {
+                        Text(
+                            text = "Out of Stock",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = Color.Red,
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
                 }
 
                 IconButton(
@@ -1648,17 +1655,21 @@ fun QuickAddDialog(
     onConfirm: (Int) -> Unit
 ) {
     var quantity by remember { mutableIntStateOf(1) }
+    var quantityText by remember(quantity) { mutableStateOf(quantity.toString()) }
+    val keyboardController = LocalSoftwareKeyboardController.current
 
-    Dialog(onDismissRequest = onDismiss) {
+    Dialog(
+        onDismissRequest = onDismiss,
+        properties = DialogProperties(usePlatformDefaultWidth = false)
+    ) {
         Card(
             shape = RoundedCornerShape(24.dp),
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
+                .fillMaxWidth(0.92f)
         ) {
             Column(
-                modifier = Modifier.padding(24.dp),
+                modifier = Modifier.padding(horizontal = 20.dp, vertical = 24.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
@@ -1687,19 +1698,76 @@ fun QuickAddDialog(
                 ) {
                     IconButton(
                         onClick = { if (quantity > 1) quantity-- },
+                        enabled = quantity > 1,
                         colors = IconButtonDefaults.filledIconButtonColors(containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f), contentColor = MaterialTheme.colorScheme.primary)
                     ) {
                         Icon(Icons.Default.Remove, null)
                     }
 
-                    Text(
-                        text = quantity.toString(),
-                        style = MaterialTheme.typography.headlineMedium,
-                        fontWeight = FontWeight.Bold
+                    BasicTextField(
+                        value = quantityText,
+                        onValueChange = { input ->
+                            val filtered = input.filter { it.isDigit() }
+                            if (filtered.isEmpty()) {
+                                quantityText = ""
+                                quantity = 1
+                            } else {
+                                val num = filtered.toIntOrNull()
+                                if (num != null) {
+                                    if (num <= 0) {
+                                        quantityText = "1"
+                                        quantity = 1
+                                    } else if (num > medicine.stock && medicine.stock > 0) {
+                                        quantityText = medicine.stock.toString()
+                                        quantity = medicine.stock
+                                    } else {
+                                        quantityText = num.toString()
+                                        quantity = num
+                                    }
+                                }
+                            }
+                        },
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Number,
+                            imeAction = ImeAction.Done
+                        ),
+                        keyboardActions = KeyboardActions(
+                            onDone = {
+                                if (quantityText.isEmpty()) {
+                                    quantityText = "1"
+                                }
+                                keyboardController?.hide()
+                            }
+                        ),
+                        textStyle = LocalTextStyle.current.copy(
+                            textAlign = TextAlign.Center,
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.ExtraBold,
+                            color = Color.Black
+                        ),
+                        singleLine = true,
+                        cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+                        modifier = Modifier
+                            .width(60.dp)
+                            .testTag("quick_add_quantity_input")
+                            .padding(vertical = 4.dp),
+                        decorationBox = { innerTextField ->
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                innerTextField()
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(2.dp)
+                                        .background(MaterialTheme.colorScheme.primary)
+                                )
+                            }
+                        }
                     )
 
                     IconButton(
-                        onClick = { quantity++ },
+                        onClick = { if (medicine.stock == 0 || quantity < medicine.stock) quantity++ },
+                        enabled = medicine.stock == 0 || quantity < medicine.stock,
                         colors = IconButtonDefaults.filledIconButtonColors(containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f), contentColor = MaterialTheme.colorScheme.primary)
                     ) {
                         Icon(Icons.Default.Add, null)
@@ -1743,6 +1811,8 @@ fun MedicineDetailScreen(
     onAddToCart: (Int) -> Unit
 ) {
     var quantity by remember { mutableIntStateOf(1) }
+    var quantityText by remember(quantity) { mutableStateOf(quantity.toString()) }
+    val keyboardController = LocalSoftwareKeyboardController.current
     
     Box(
         modifier = Modifier
@@ -1874,7 +1944,7 @@ fun MedicineDetailScreen(
                         }
                     }
 
-                    // Price (large green text, 22sp) & Stock Count Row
+                    // Price (large green text, 22sp) Row
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -1894,22 +1964,6 @@ fun MedicineDetailScreen(
                                 fontWeight = FontWeight.Bold,
                                 color = Color(0xFF2E7D32)
                             )
-                        }
-
-                        if (medicine.stock > 0) {
-                            Column(horizontalAlignment = Alignment.End) {
-                                Text(
-                                    text = "Available Stock",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = Color.Gray
-                                )
-                                Text(
-                                    text = "${medicine.stock} units",
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    fontWeight = FontWeight.SemiBold,
-                                    color = Color.DarkGray
-                                )
-                            }
                         }
                     }
 
@@ -1942,16 +1996,70 @@ fun MedicineDetailScreen(
                                 Icon(Icons.Default.Remove, null)
                             }
 
-                            Text(
-                                text = quantity.toString(),
-                                style = MaterialTheme.typography.titleLarge,
-                                fontWeight = FontWeight.ExtraBold,
-                                color = Color.Black
+                            BasicTextField(
+                                value = quantityText,
+                                onValueChange = { input ->
+                                    val filtered = input.filter { it.isDigit() }
+                                    if (filtered.isEmpty()) {
+                                        quantityText = ""
+                                        quantity = 1
+                                    } else {
+                                        val num = filtered.toIntOrNull()
+                                        if (num != null) {
+                                            if (num <= 0) {
+                                                quantityText = "1"
+                                                quantity = 1
+                                            } else if (num > medicine.stock && medicine.stock > 0) {
+                                                quantityText = medicine.stock.toString()
+                                                quantity = medicine.stock
+                                            } else {
+                                                quantityText = num.toString()
+                                                quantity = num
+                                            }
+                                        }
+                                    }
+                                },
+                                keyboardOptions = KeyboardOptions(
+                                    keyboardType = KeyboardType.Number,
+                                    imeAction = ImeAction.Done
+                                ),
+                                keyboardActions = KeyboardActions(
+                                    onDone = {
+                                        if (quantityText.isEmpty()) {
+                                            quantityText = "1"
+                                        }
+                                        keyboardController?.hide()
+                                    }
+                                ),
+                                textStyle = LocalTextStyle.current.copy(
+                                    textAlign = TextAlign.Center,
+                                    fontSize = 18.sp,
+                                    fontWeight = FontWeight.ExtraBold,
+                                    color = Color.Black
+                                ),
+                                singleLine = true,
+                                cursorBrush = SolidColor(Color(0xFF2E7D32)),
+                                modifier = Modifier
+                                    .width(60.dp)
+                                    .testTag("quantity_input")
+                                    .padding(vertical = 4.dp),
+                                decorationBox = { innerTextField ->
+                                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                        innerTextField()
+                                        Spacer(modifier = Modifier.height(4.dp))
+                                        Box(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .height(2.dp)
+                                                .background(Color(0xFF2E7D32))
+                                        )
+                                    }
+                                }
                             )
 
                             IconButton(
                                 onClick = { if (medicine.stock == 0 || quantity < medicine.stock) quantity++ },
-                                enabled = medicine.stock > 0,
+                                enabled = medicine.stock > 0 && quantity < medicine.stock,
                                 colors = IconButtonDefaults.filledIconButtonColors(
                                     containerColor = Color(0xFFF1F8F5),
                                     contentColor = Color(0xFF2E7D32)
@@ -2037,6 +2145,105 @@ fun MedicineDetailScreen(
 }
 
 @Composable
+fun CartQuantityEditor(
+    quantity: Int,
+    maxStock: Int,
+    onQuantityChanged: (Int) -> Unit
+) {
+    var quantityText by remember(quantity) { mutableStateOf(quantity.toString()) }
+    val keyboardController = LocalSoftwareKeyboardController.current
+
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        IconButton(
+            onClick = {
+                if (quantity > 1) {
+                    onQuantityChanged(quantity - 1)
+                }
+            },
+            modifier = Modifier.size(32.dp)
+        ) {
+            Icon(Icons.Default.Remove, null, modifier = Modifier.size(16.dp))
+        }
+
+        BasicTextField(
+            value = quantityText,
+            onValueChange = { input ->
+                val filtered = input.filter { it.isDigit() }
+                if (filtered.isEmpty()) {
+                    quantityText = ""
+                    onQuantityChanged(1)
+                } else {
+                    val num = filtered.toIntOrNull()
+                    if (num != null) {
+                        if (num <= 0) {
+                            quantityText = "1"
+                            onQuantityChanged(1)
+                        } else if (num > maxStock) {
+                            quantityText = maxStock.toString()
+                            onQuantityChanged(maxStock)
+                        } else {
+                            quantityText = num.toString()
+                            onQuantityChanged(num)
+                        }
+                    }
+                }
+            },
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Number,
+                imeAction = ImeAction.Done
+            ),
+            keyboardActions = KeyboardActions(
+                onDone = {
+                    if (quantityText.isEmpty()) {
+                        quantityText = "1"
+                    }
+                    keyboardController?.hide()
+                }
+            ),
+            textStyle = LocalTextStyle.current.copy(
+                textAlign = TextAlign.Center,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.Black
+            ),
+            singleLine = true,
+            cursorBrush = SolidColor(Color(0xFF2E7D32)),
+            modifier = Modifier
+                .width(44.dp)
+                .testTag("cart_quantity_input")
+                .padding(vertical = 4.dp),
+            decorationBox = { innerTextField ->
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    innerTextField()
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(1.5.dp)
+                            .background(Color(0xFF2E7D32))
+                    )
+                }
+            }
+        )
+
+        IconButton(
+            onClick = {
+                if (quantity < maxStock) {
+                    onQuantityChanged(quantity + 1)
+                }
+            },
+            modifier = Modifier.size(32.dp),
+            enabled = quantity < maxStock
+        ) {
+            Icon(Icons.Default.Add, null, modifier = Modifier.size(16.dp))
+        }
+    }
+}
+
+@Composable
 fun DoctorCartScreen(
     viewModel: PharmacyViewModel,
     onBackToBrowse: () -> Unit,
@@ -2046,6 +2253,7 @@ fun DoctorCartScreen(
 ) {
     val cartItems by viewModel.cartItems.collectAsStateWithLifecycle()
     val total by viewModel.cartTotal.collectAsStateWithLifecycle(0.0)
+    val allMedicines by viewModel.allMedicines.collectAsStateWithLifecycle()
 
     Column(
         modifier = Modifier
@@ -2112,25 +2320,16 @@ fun DoctorCartScreen(
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
-                                IconButton(
-                                    onClick = { viewModel.updateCartQuantity(item.medicineId, item.quantity - 1) },
-                                    modifier = Modifier.size(32.dp)
-                                ) {
-                                    Icon(Icons.Default.Remove, null, modifier = Modifier.size(16.dp))
-                                }
+                                val med = allMedicines.find { it.id == item.medicineId }
+                                val maxStock = med?.stock ?: 9999
 
-                                Text(
-                                    item.quantity.toString(),
-                                    fontWeight = FontWeight.Bold,
-                                    fontSize = 16.sp
+                                CartQuantityEditor(
+                                    quantity = item.quantity,
+                                    maxStock = maxStock,
+                                    onQuantityChanged = { newQty ->
+                                        viewModel.updateCartQuantity(item.medicineId, newQty)
+                                    }
                                 )
-
-                                IconButton(
-                                    onClick = { viewModel.updateCartQuantity(item.medicineId, item.quantity + 1) },
-                                    modifier = Modifier.size(32.dp)
-                                ) {
-                                    Icon(Icons.Default.Add, null, modifier = Modifier.size(16.dp))
-                                }
 
                                 Spacer(modifier = Modifier.width(4.dp))
 
@@ -3232,7 +3431,7 @@ fun AdminInventoryScreen(
                                     Column {
                                         Text(med.name, fontWeight = FontWeight.Bold)
                                         Text("Formula: ${med.formula}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f))
-                                        Text("Category: ${med.category} | Price: Rs. ${med.price}", style = MaterialTheme.typography.bodySmall)
+                                        Text("Category: ${med.category} | Price: Rs. ${med.price} | Stock: ${med.stock}", style = MaterialTheme.typography.bodySmall)
                                     }
                                 }
 
