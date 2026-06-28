@@ -4087,7 +4087,7 @@ fun AdminDoctorsScreen(
                                         Text(
                                             text = u.name,
                                             fontWeight = FontWeight.Bold,
-                                            style = MaterialTheme.typography.bodyLarge
+                                            style = MaterialTheme.typography.bodyMedium
                                         )
                                         // Role Badge
                                         val badgeColor = if (u.role == "admin") MaterialTheme.colorScheme.tertiaryContainer else MaterialTheme.colorScheme.primaryContainer
@@ -4141,14 +4141,17 @@ fun AdminDoctorsScreen(
                                     )
                                 }
 
-                                Switch(
-                                    checked = u.isActive,
-                                    onCheckedChange = { viewModel.toggleDoctorActiveStatus(u) },
-                                    colors = SwitchDefaults.colors(
-                                        checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
-                                        checkedTrackColor = MaterialTheme.colorScheme.primary
-                                    )
-                                )
+                                if (u.email != "admin@daim.com") {
+                                    IconButton(
+                                        onClick = { viewModel.deleteUser(u) }
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Delete,
+                                            contentDescription = "Delete User",
+                                            tint = MaterialTheme.colorScheme.error
+                                        )
+                                    }
+                                }
                             }
                         }
                     }

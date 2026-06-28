@@ -193,7 +193,8 @@ object FirebaseSyncHelper {
                 }
                 if (snapshots != null) {
                     scope.launch(Dispatchers.IO) {
-                        for (doc in snapshots.documents) {
+                        for (change in snapshots.documentChanges) {
+                            val doc = change.document
                             val id = doc.getLong("id")?.toInt() ?: continue
                             val name = doc.getString("name") ?: ""
                             val formula = doc.getString("formula") ?: ""
@@ -211,7 +212,11 @@ object FirebaseSyncHelper {
                                 stock = stock,
                                 imageUri = imageUri
                             )
-                            repository.insertMedicine(entity)
+                            if (change.type == com.google.firebase.firestore.DocumentChange.Type.REMOVED) {
+                                repository.deleteMedicine(entity)
+                            } else {
+                                repository.insertMedicine(entity)
+                            }
                         }
                     }
                 }
@@ -349,6 +354,16 @@ object FirebaseSyncHelper {
         }
     }
 
+    suspend fun deleteUserFromFirestore(context: Context, user: UserEntity) {
+        if (!initializeFirebase(context)) return
+        try {
+            val db = FirebaseFirestore.getInstance()
+            db.collection("users").document(user.id).delete()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
     fun syncAllLocalUsersToFirestore(context: Context, repository: PharmacyRepository, scope: CoroutineScope) {
         if (!initializeFirebase(context)) return
         scope.launch(Dispatchers.IO) {
@@ -393,7 +408,11 @@ object FirebaseSyncHelper {
                                 lastOrderItemsJson = lastOrderItemsJson,
                                 password = password
                             )
-                            repository.insertUser(userEntity)
+                            if (change.type == com.google.firebase.firestore.DocumentChange.Type.REMOVED) {
+                                repository.deleteUser(userEntity)
+                            } else {
+                                repository.insertUser(userEntity)
+                            }
                         }
                     }
                 }
@@ -437,26 +456,7 @@ object FirebaseSyncHelper {
                         }
                     }
 
-                    if (list.isEmpty()) {
-                        scope.launch(Dispatchers.IO) {
-                            val defaultCats = listOf(
-                                CategoryEntity(id = "tablets", name = "Tablets", iconName = "medication"),
-                                CategoryEntity(id = "capsules", name = "Capsules", iconName = "medical_services"),
-                                CategoryEntity(id = "syrups", name = "Syrups", iconName = "liquor"),
-                                CategoryEntity(id = "injections", name = "Injections", iconName = "vaccines")
-                            )
-                            for (cat in defaultCats) {
-                                val data = mapOf(
-                                    "id" to cat.id,
-                                    "name" to cat.name,
-                                    "iconName" to cat.iconName
-                                )
-                                db.collection("categories").document(cat.id).set(data)
-                            }
-                        }
-                    } else {
-                        repository.updateCategories(list)
-                    }
+                    repository.updateCategories(list)
                 }
             }
         } catch (e: Exception) {

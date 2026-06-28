@@ -107,11 +107,6 @@ class PharmacyViewModel(
             repository = repository,
             scope = viewModelScope
         )
-        FirebaseSyncHelper.syncAllLocalUsersToFirestore(
-            context = context,
-            repository = repository,
-            scope = viewModelScope
-        )
     }
 
     private fun restoreSession() {
@@ -449,6 +444,13 @@ class PharmacyViewModel(
             val updatedUser = user.copy(isActive = !user.isActive)
             repository.updateUser(updatedUser)
             FirebaseSyncHelper.syncUserToFirestore(getApplication(), updatedUser)
+        }
+    }
+
+    fun deleteUser(user: UserEntity) {
+        viewModelScope.launch {
+            repository.deleteUser(user)
+            FirebaseSyncHelper.deleteUserFromFirestore(getApplication(), user)
         }
     }
 

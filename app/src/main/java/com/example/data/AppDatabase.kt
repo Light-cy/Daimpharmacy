@@ -72,10 +72,8 @@ abstract class AppDatabase : RoomDatabase() {
 
         suspend fun populateDatabase(db: AppDatabase) {
             val userDao = db.userDao()
-            val medicineDao = db.medicineDao()
 
-            // 1. Seed Accounts
-            // Admin account
+            // Seed only the main administrator account
             userDao.insertUser(
                 UserEntity(
                     id = "admin@daim.com",
@@ -86,136 +84,6 @@ abstract class AppDatabase : RoomDatabase() {
                     password = "admin123"
                 )
             )
-            // Doctor 1
-            userDao.insertUser(
-                UserEntity(
-                    id = "dr.ahmed@daim.com",
-                    name = "Dr. Ahmed",
-                    email = "dr.ahmed@daim.com",
-                    role = "doctor",
-                    isActive = true,
-                    password = "doctor123"
-                )
-            )
-            // Doctor 2
-            userDao.insertUser(
-                UserEntity(
-                    id = "dr.fatima@daim.com",
-                    name = "Dr. Fatima",
-                    email = "dr.fatima@daim.com",
-                    role = "doctor",
-                    isActive = true,
-                    password = "doctor123"
-                )
-            )
-
-            // 3. Seed Medicines
-            val medicines = listOf(
-                MedicineEntity(
-                    name = "Panadol",
-                    formula = "Paracetamol 500mg",
-                    category = "Tablets",
-                    imageUrl = "",
-                    isAvailable = true,
-                    price = 15.0,
-                    stock = 120,
-                    imageUri = "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?auto=format&fit=crop&q=80&w=400"
-                ),
-                MedicineEntity(
-                    name = "Amoxil",
-                    formula = "Amoxicillin 250mg/5ml",
-                    category = "Syrups",
-                    imageUrl = "",
-                    isAvailable = true,
-                    price = 85.0,
-                    stock = 50,
-                    imageUri = "https://images.unsplash.com/photo-1550572017-edd951b55104?auto=format&fit=crop&q=80&w=400"
-                ),
-                MedicineEntity(
-                    name = "Ponstan Forte",
-                    formula = "Mefenamic Acid 500mg",
-                    category = "Tablets",
-                    imageUrl = "",
-                    isAvailable = true,
-                    price = 30.0,
-                    stock = 85,
-                    imageUri = "https://images.unsplash.com/photo-1584017911766-d451b3b0e843?auto=format&fit=crop&q=80&w=400"
-                ),
-                MedicineEntity(
-                    name = "Brufen",
-                    formula = "Ibuprofen 400mg",
-                    category = "Tablets",
-                    imageUrl = "",
-                    isAvailable = true,
-                    price = 25.0,
-                    stock = 100,
-                    imageUri = "https://images.unsplash.com/photo-1603398938378-e54eab446dde?auto=format&fit=crop&q=80&w=400"
-                ),
-                MedicineEntity(
-                    name = "Ventolin",
-                    formula = "Salbutamol 2mg/5ml",
-                    category = "Syrups",
-                    imageUrl = "",
-                    isAvailable = true,
-                    price = 60.0,
-                    stock = 40,
-                    imageUri = "https://images.unsplash.com/photo-1527613426441-4da17471b66d?auto=format&fit=crop&q=80&w=400"
-                ),
-                MedicineEntity(
-                    name = "Rocephin",
-                    formula = "Ceftriaxone 1g",
-                    category = "Injections",
-                    imageUrl = "",
-                    isAvailable = true,
-                    price = 180.0,
-                    stock = 30,
-                    imageUri = "https://images.unsplash.com/photo-1579684389782-64d84b5e901a?auto=format&fit=crop&q=80&w=400"
-                ),
-                MedicineEntity(
-                    name = "Loratadine",
-                    formula = "Loratadine 10mg",
-                    category = "Tablets",
-                    imageUrl = "",
-                    isAvailable = true,
-                    price = 45.0,
-                    stock = 60,
-                    imageUri = "https://images.unsplash.com/photo-1550572017-edd951b55104?auto=format&fit=crop&q=80&w=400"
-                ),
-                MedicineEntity(
-                    name = "Omeprazole",
-                    formula = "Omeprazole 20mg",
-                    category = "Capsules",
-                    imageUrl = "",
-                    isAvailable = true,
-                    price = 55.0,
-                    stock = 90,
-                    imageUri = "https://images.unsplash.com/photo-1471864190281-a93a3070b6de?auto=format&fit=crop&q=80&w=400"
-                ),
-                MedicineEntity(
-                    name = "Polyfax",
-                    formula = "Polymyxin B Sulfate",
-                    category = "Capsules",
-                    imageUrl = "",
-                    isAvailable = true,
-                    price = 40.0,
-                    stock = 25,
-                    imageUri = "https://images.unsplash.com/photo-1584017911766-d451b3b0e843?auto=format&fit=crop&q=80&w=400"
-                ),
-                MedicineEntity(
-                    name = "Diclofenac",
-                    formula = "Diclofenac Sodium 75mg/3ml",
-                    category = "Injections",
-                    imageUrl = "",
-                    isAvailable = true,
-                    price = 70.0,
-                    stock = 40,
-                    imageUri = "https://images.unsplash.com/photo-1512290923902-8a9f81dc236c?auto=format&fit=crop&q=80&w=400"
-                )
-            )
-
-            for (medicine in medicines) {
-                medicineDao.insertMedicine(medicine)
-            }
         }
     }
 }
