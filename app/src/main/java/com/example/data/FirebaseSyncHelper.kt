@@ -125,7 +125,8 @@ object FirebaseSyncHelper {
                 "category" to medicine.category,
                 "price" to medicine.price,
                 "stock" to medicine.stock,
-                "imageUri" to medicine.imageUri
+                "imageUri" to medicine.imageUri,
+                "expiryDate" to medicine.expiryDate
             )
             db.collection("medicines").document(medicine.id.toString()).set(data)
         } catch (e: Exception) {
@@ -159,6 +160,7 @@ object FirebaseSyncHelper {
                             val price = doc.getDouble("price") ?: 0.0
                             val stock = doc.getLong("stock")?.toInt() ?: 0
                             val imageUri = doc.getString("imageUri")
+                            val expiryDate = doc.getString("expiryDate")
 
                             val entity = MedicineEntity(
                                 id = id,
@@ -167,7 +169,8 @@ object FirebaseSyncHelper {
                                 category = category,
                                 price = price,
                                 stock = stock,
-                                imageUri = imageUri
+                                imageUri = imageUri,
+                                expiryDate = expiryDate
                             )
                             repository.insertMedicine(entity)
                             hasNewItems = true
@@ -202,6 +205,7 @@ object FirebaseSyncHelper {
                             val price = doc.getDouble("price") ?: 0.0
                             val stock = doc.getLong("stock")?.toInt() ?: 0
                             val imageUri = doc.getString("imageUri")
+                            val expiryDate = doc.getString("expiryDate")
 
                             val entity = MedicineEntity(
                                 id = id,
@@ -210,7 +214,8 @@ object FirebaseSyncHelper {
                                 category = category,
                                 price = price,
                                 stock = stock,
-                                imageUri = imageUri
+                                imageUri = imageUri,
+                                expiryDate = expiryDate
                             )
                             if (change.type == com.google.firebase.firestore.DocumentChange.Type.REMOVED) {
                                 repository.deleteMedicine(entity)

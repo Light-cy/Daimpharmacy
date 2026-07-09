@@ -3271,6 +3271,23 @@ fun AdminInventoryScreen(
     val isRefreshing by viewModel.isRefreshing.collectAsStateWithLifecycle()
     val pullToRefreshState = rememberPullToRefreshState()
 
+    var selectedFilter by remember { mutableStateOf("all") } // "all" | "expiring" | "low_stock"
+
+    val expiringCount = remember(medicines) {
+        medicines.count { getExpiryStatus(it.expiryDate) == "expiring_next_month" }
+    }
+    val lowStockCount = remember(medicines) {
+        medicines.count { it.stock < 20 }
+    }
+
+    val filteredMeds = remember(medicines, selectedFilter) {
+        when (selectedFilter) {
+            "expiring" -> medicines.filter { getExpiryStatus(it.expiryDate) == "expiring_next_month" }
+            "low_stock" -> medicines.filter { it.stock < 20 }
+            else -> medicines
+        }
+    }
+
     PullToRefreshBox(
         isRefreshing = isRefreshing,
         onRefresh = { viewModel.refreshData() },
@@ -3313,6 +3330,67 @@ fun AdminInventoryScreen(
                 }
             }
 
+            // Inventory Filter Options
+            LazyRow(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                item {
+                    FilterChip(
+                        selected = selectedFilter == "all",
+                        onClick = { selectedFilter = "all" },
+                        label = { Text("All Medicines (${medicines.size})") }
+                    )
+                }
+                item {
+                    FilterChip(
+                        selected = selectedFilter == "expiring",
+                        onClick = { selectedFilter = "expiring" },
+                        label = {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                            ) {
+                                Text("Expiring Next Month")
+                                if (expiringCount > 0) {
+                                    Badge(
+                                        containerColor = MaterialTheme.colorScheme.error,
+                                        contentColor = MaterialTheme.colorScheme.onError
+                                    ) {
+                                        Text(expiringCount.toString(), fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                                    }
+                                }
+                            }
+                        }
+                    )
+                }
+                item {
+                    FilterChip(
+                        selected = selectedFilter == "low_stock",
+                        onClick = { selectedFilter = "low_stock" },
+                        label = {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                            ) {
+                                Text("Low Stock")
+                                if (lowStockCount > 0) {
+                                    Badge(
+                                        containerColor = Color(0xFFFF9800),
+                                        contentColor = Color.White
+                                    ) {
+                                        Text(lowStockCount.toString(), fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                                    }
+                                }
+                            }
+                        }
+                    )
+                }
+            }
+
             if (isLoading) {
                 LazyColumn(
                     modifier = Modifier
@@ -3336,7 +3414,7 @@ fun AdminInventoryScreen(
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                     contentPadding = PaddingValues(bottom = 80.dp)
                 ) {
-                    items(medicines) { med ->
+                    items(filteredMeds) { med ->
                         Card(
                             modifier = Modifier.fillMaxWidth(),
                             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
@@ -3369,6 +3447,59 @@ fun AdminInventoryScreen(
                                         Text(med.name, fontWeight = FontWeight.Bold)
                                         Text("Formula: ${med.formula}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f))
                                         Text("Category: ${med.category} | Price: Rs. ${med.price} | Stock: ${med.stock}", style = MaterialTheme.typography.bodySmall)
+                                        if (!med.expiryDate.isNullOrBlank()) {
+                                            val status = getExpiryStatus(med.expiryDate)
+                                            Row(
+                                                verticalAlignment = Alignment.CenterVertically,
+                                                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                                modifier = Modifier.padding(top = 4.dp)
+                                            ) {
+                                                Icon(
+                                                    imageVector = Icons.Default.Event,
+                                                    contentDescription = null,
+                                                    modifier = Modifier.size(14.dp),
+                                                    tint = if (status == "expiring_next_month" || status == "expired" || status == "expired_soon_current_month") {
+                                                        MaterialTheme.colorScheme.error
+                                                    } else {
+                                                        MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f)
+                                                    }
+                                                )
+                                                Text(
+                                                    text = "Expiry: ${med.expiryDate}",
+                                                    style = MaterialTheme.typography.bodySmall,
+                                                    color = if (status == "expiring_next_month" || status == "expired" || status == "expired_soon_current_month") {
+                                                        MaterialTheme.colorScheme.error
+                                                    } else {
+                                                        MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
+                                                    },
+                                                    fontWeight = if (status != "active") FontWeight.Bold else FontWeight.Normal
+                                                )
+                                                
+                                                when (status) {
+                                                    "expired" -> {
+                                                        SuggestionChip(
+                                                            onClick = {},
+                                                            label = { Text("Expired", fontSize = 10.sp, color = MaterialTheme.colorScheme.onError) },
+                                                            colors = SuggestionChipDefaults.suggestionChipColors(containerColor = MaterialTheme.colorScheme.error)
+                                                        )
+                                                    }
+                                                    "expired_soon_current_month" -> {
+                                                        SuggestionChip(
+                                                            onClick = {},
+                                                            label = { Text("Expiring This Month", fontSize = 10.sp, color = Color.White) },
+                                                            colors = SuggestionChipDefaults.suggestionChipColors(containerColor = Color(0xFFD84315))
+                                                        )
+                                                    }
+                                                    "expiring_next_month" -> {
+                                                        SuggestionChip(
+                                                            onClick = {},
+                                                            label = { Text("Expiring Next Month", fontSize = 10.sp, color = Color.White) },
+                                                            colors = SuggestionChipDefaults.suggestionChipColors(containerColor = Color(0xFFFF8F00))
+                                                        )
+                                                    }
+                                                }
+                                            }
+                                        }
                                     }
                                 }
 
@@ -3390,8 +3521,8 @@ fun AdminInventoryScreen(
                 AddMedicineDialog(
                     categories = categories,
                     onDismiss = { showAddDialog = false },
-                    onAdd = { name, formula, cat, price, stock, imageUri ->
-                        viewModel.addMedicine(name, formula, cat, price, stock, imageUri)
+                    onAdd = { name, formula, cat, price, stock, imageUri, expiryDate ->
+                        viewModel.addMedicine(name, formula, cat, price, stock, imageUri, expiryDate)
                         showAddDialog = false
                     }
                 )
@@ -3416,13 +3547,14 @@ fun AdminInventoryScreen(
 fun AddMedicineDialog(
     categories: List<CategoryEntity>,
     onDismiss: () -> Unit,
-    onAdd: (String, String, String, Double, Int, String?) -> Unit
+    onAdd: (String, String, String, Double, Int, String?, String?) -> Unit
 ) {
     var name by remember { mutableStateOf("") }
     var formula by remember { mutableStateOf("") }
     var selectedCat by remember { mutableStateOf(categories.firstOrNull()?.name ?: "Tablets") }
     var price by remember { mutableStateOf("") }
     var stock by remember { mutableStateOf("") }
+    var expiryDate by remember { mutableStateOf("") }
 
     val context = LocalContext.current
     var imageUriPath by remember { mutableStateOf<String?>(null) }
@@ -3439,6 +3571,19 @@ fun AddMedicineDialog(
             }
         }
     }
+
+    val calendar = Calendar.getInstance()
+    val datePickerDialog = android.app.DatePickerDialog(
+        context,
+        { _, year, month, dayOfMonth ->
+            val monthStr = String.format("%02d", month + 1)
+            val dayStr = String.format("%02d", dayOfMonth)
+            expiryDate = "$year-$monthStr-$dayStr"
+        },
+        calendar.get(Calendar.YEAR),
+        calendar.get(Calendar.MONTH),
+        calendar.get(Calendar.DAY_OF_MONTH)
+    )
 
     Dialog(
         onDismissRequest = onDismiss,
@@ -3488,6 +3633,20 @@ fun AddMedicineDialog(
                     label = { Text("Stock Quantity") },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     modifier = Modifier.fillMaxWidth()
+                )
+
+                OutlinedTextField(
+                    value = expiryDate,
+                    onValueChange = { expiryDate = it },
+                    label = { Text("Expiry Date (YYYY-MM-DD)") },
+                    placeholder = { Text("e.g. 2026-12-31 (Optional)") },
+                    trailingIcon = {
+                        IconButton(onClick = { datePickerDialog.show() }) {
+                            Icon(Icons.Default.Event, contentDescription = "Select Date")
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    readOnly = true
                 )
 
                 // Medicine Image Section
@@ -3578,7 +3737,7 @@ fun AddMedicineDialog(
                         onClick = {
                             val priceVal = price.toDoubleOrNull() ?: 0.0
                             val stockVal = stock.toIntOrNull() ?: 0
-                            onAdd(name, formula, selectedCat, priceVal, stockVal, imageUriPath)
+                            onAdd(name, formula, selectedCat, priceVal, stockVal, imageUriPath, expiryDate.ifBlank { null })
                         },
                         enabled = name.isNotBlank() && formula.isNotBlank(),
                         modifier = Modifier.weight(1f)
@@ -3607,6 +3766,7 @@ fun EditMedicineDialog(
     val context = LocalContext.current
     var imageUriPath by remember { mutableStateOf<String?>(medicine.imageUri) }
     var imageUrlField by remember { mutableStateOf(if (medicine.imageUri?.startsWith("http") == true) medicine.imageUri ?: "" else "") }
+    var expiryDate by remember { mutableStateOf(medicine.expiryDate ?: "") }
 
     val galleryLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
@@ -3619,6 +3779,19 @@ fun EditMedicineDialog(
             }
         }
     }
+
+    val calendar = Calendar.getInstance()
+    val datePickerDialog = android.app.DatePickerDialog(
+        context,
+        { _, year, month, dayOfMonth ->
+            val monthStr = String.format("%02d", month + 1)
+            val dayStr = String.format("%02d", dayOfMonth)
+            expiryDate = "$year-$monthStr-$dayStr"
+        },
+        calendar.get(Calendar.YEAR),
+        calendar.get(Calendar.MONTH),
+        calendar.get(Calendar.DAY_OF_MONTH)
+    )
 
     Dialog(
         onDismissRequest = onDismiss,
@@ -3667,6 +3840,20 @@ fun EditMedicineDialog(
                     label = { Text("Stock Quantity") },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     modifier = Modifier.fillMaxWidth()
+                )
+
+                OutlinedTextField(
+                    value = expiryDate,
+                    onValueChange = { expiryDate = it },
+                    label = { Text("Expiry Date (YYYY-MM-DD)") },
+                    placeholder = { Text("e.g. 2026-12-31 (Optional)") },
+                    trailingIcon = {
+                        IconButton(onClick = { datePickerDialog.show() }) {
+                            Icon(Icons.Default.Event, contentDescription = "Select Date")
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    readOnly = true
                 )
 
                 // Medicine Image Section
@@ -3757,7 +3944,7 @@ fun EditMedicineDialog(
                         onClick = {
                             val priceVal = price.toDoubleOrNull() ?: medicine.price
                             val stockVal = stock.toIntOrNull() ?: medicine.stock
-                            onSave(medicine.copy(name = name, formula = formula, category = selectedCat, price = priceVal, stock = stockVal, imageUri = imageUriPath))
+                            onSave(medicine.copy(name = name, formula = formula, category = selectedCat, price = priceVal, stock = stockVal, imageUri = imageUriPath, expiryDate = expiryDate.ifBlank { null }))
                         },
                         enabled = name.isNotBlank() && formula.isNotBlank(),
                         modifier = Modifier.weight(1f)
@@ -4492,5 +4679,46 @@ fun AdminWhatsAppConfigDialog(onDismiss: () -> Unit) {
                 }
             }
         }
+    }
+}
+
+fun getExpiryStatus(expiryDateStr: String?): String {
+    if (expiryDateStr.isNullOrBlank()) return "active"
+    try {
+        val parts = expiryDateStr.split("-")
+        if (parts.size < 3) return "active"
+        val year = parts[0].toIntOrNull() ?: return "active"
+        val month = parts[1].toIntOrNull() ?: return "active"
+        val day = parts[2].toIntOrNull() ?: return "active"
+
+        val currentCalendar = Calendar.getInstance()
+        val currentYear = currentCalendar.get(Calendar.YEAR)
+        val currentMonth = currentCalendar.get(Calendar.MONTH) + 1 // 1-12
+        val currentDay = currentCalendar.get(Calendar.DAY_OF_MONTH)
+
+        // Compare year first
+        if (year < currentYear) return "expired"
+        if (year == currentYear) {
+            if (month < currentMonth) return "expired"
+            if (month == currentMonth) {
+                if (day < currentDay) return "expired"
+                return "expired_soon_current_month"
+            }
+        }
+
+        // Check if next month
+        var targetMonth = currentMonth + 1
+        var targetYear = currentYear
+        if (targetMonth > 12) {
+            targetMonth = 1
+            targetYear += 1
+        }
+        if (year == targetYear && month == targetMonth) {
+            return "expiring_next_month"
+        }
+
+        return "active"
+    } catch (e: Exception) {
+        return "active"
     }
 }

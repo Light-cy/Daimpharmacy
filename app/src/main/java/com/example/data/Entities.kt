@@ -24,7 +24,8 @@ data class MedicineEntity(
     val isAvailable: Boolean = true,
     val price: Double = 0.0,
     val stock: Int = 100,
-    val imageUri: String? = null
+    val imageUri: String? = null,
+    val expiryDate: String? = null
 )
 
 data class CategoryEntity(

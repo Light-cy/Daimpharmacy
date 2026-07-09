@@ -340,7 +340,7 @@ class PharmacyViewModel(
         }
     }
 
-    fun addMedicine(name: String, formula: String, category: String, price: Double, stock: Int, imageUri: String? = null) {
+    fun addMedicine(name: String, formula: String, category: String, price: Double, stock: Int, imageUri: String? = null, expiryDate: String? = null) {
         viewModelScope.launch {
             var finalizedImageUri = imageUri
             val isFirebase = FirebaseSyncHelper.isFirebaseEnabled(getApplication())
@@ -358,7 +358,8 @@ class PharmacyViewModel(
                 category = category,
                 price = price,
                 stock = stock,
-                imageUri = finalizedImageUri
+                imageUri = finalizedImageUri,
+                expiryDate = expiryDate
             )
             
             val newRowId = repository.insertMedicine(entity)
