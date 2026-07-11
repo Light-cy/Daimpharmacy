@@ -59,6 +59,7 @@ import androidx.compose.ui.window.DialogProperties
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import android.net.Uri
+import android.graphics.Bitmap
 import android.content.Context
 import android.content.Intent
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -448,6 +449,33 @@ fun saveUriToLocalFile(context: android.content.Context, uri: android.net.Uri): 
     } catch (e: Exception) {
         e.printStackTrace()
         null
+    }
+}
+
+fun saveBitmapToLocalFile(context: android.content.Context, bitmap: android.graphics.Bitmap): String? {
+    return try {
+        val fileName = "med_${System.currentTimeMillis()}.jpg"
+        val file = java.io.File(context.filesDir, fileName)
+        file.outputStream().use { outputStream ->
+            bitmap.compress(android.graphics.Bitmap.CompressFormat.JPEG, 90, outputStream)
+        }
+        file.absolutePath
+    } catch (e: Exception) {
+        e.printStackTrace()
+        null
+    }
+}
+
+fun saveAndProcessUriToLocalFile(context: android.content.Context, uri: android.net.Uri): String? {
+    return try {
+        val inputStream = context.contentResolver.openInputStream(uri) ?: return null
+        val bitmap = android.graphics.BitmapFactory.decodeStream(inputStream) ?: return null
+        val processedBitmap = com.example.data.LocalImageProcessor.processMedicineImage(bitmap)
+        saveBitmapToLocalFile(context, processedBitmap)
+    } catch (e: Exception) {
+        e.printStackTrace()
+        // fallback to normal saving if processing fails
+        saveUriToLocalFile(context, uri)
     }
 }
 
@@ -3560,14 +3588,98 @@ fun AddMedicineDialog(
     var imageUriPath by remember { mutableStateOf<String?>(null) }
     var imageUrlField by remember { mutableStateOf("") }
 
+    var isScanning by remember { mutableStateOf(false) }
+    var scanError by remember { mutableStateOf<String?>(null) }
+    val coroutineScope = rememberCoroutineScope()
+
     val galleryLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
         uri?.let {
-            val localPath = saveUriToLocalFile(context, it)
+            val localPath = saveAndProcessUriToLocalFile(context, it)
             if (localPath != null) {
                 imageUriPath = localPath
                 imageUrlField = "" // Clear URL field if we picked a local file
+            }
+        }
+    }
+
+    val scanCameraLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.TakePicturePreview()
+    ) { bitmap: Bitmap? ->
+        bitmap?.let { b ->
+            coroutineScope.launch {
+                isScanning = true
+                scanError = null
+                try {
+                    val result = GeminiService.analyzeMedicineImage(b)
+                    if (result != null) {
+                        name = result.name
+                        formula = result.formula
+                        stock = "10000"
+                        if (!result.category.isNullOrBlank()) {
+                            val matchedCat = categories.firstOrNull { cat -> cat.name.equals(result.category, ignoreCase = true) }
+                            if (matchedCat != null) {
+                                selectedCat = matchedCat.name
+                            }
+                        }
+                        // Apply the local background-brightening threshold filter
+                        val processedBitmap = com.example.data.LocalImageProcessor.processMedicineImage(b)
+                        val tempPath = saveBitmapToLocalFile(context, processedBitmap)
+                        if (tempPath != null) {
+                            imageUriPath = tempPath
+                            imageUrlField = ""
+                        }
+                    } else {
+                        scanError = "Failed to extract medicine details. Please try again."
+                    }
+                } catch (e: Exception) {
+                    scanError = "Error: ${e.message}"
+                } finally {
+                    isScanning = false
+                }
+            }
+        }
+    }
+
+    val scanGalleryLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        uri?.let { selectedUri ->
+            coroutineScope.launch {
+                isScanning = true
+                scanError = null
+                try {
+                    val inputStream = context.contentResolver.openInputStream(selectedUri)
+                    val bitmap = android.graphics.BitmapFactory.decodeStream(inputStream)
+                    if (bitmap != null) {
+                        val result = GeminiService.analyzeMedicineImage(bitmap)
+                        if (result != null) {
+                            name = result.name
+                            formula = result.formula
+                            stock = "10000"
+                            if (!result.category.isNullOrBlank()) {
+                                val matchedCat = categories.firstOrNull { cat -> cat.name.equals(result.category, ignoreCase = true) }
+                                if (matchedCat != null) {
+                                    selectedCat = matchedCat.name
+                                }
+                            }
+                            val localPath = saveAndProcessUriToLocalFile(context, selectedUri)
+                            if (localPath != null) {
+                                imageUriPath = localPath
+                                imageUrlField = ""
+                            }
+                        } else {
+                            scanError = "Failed to extract medicine details. Please try again."
+                        }
+                    } else {
+                        scanError = "Failed to load selected image."
+                    }
+                } catch (e: Exception) {
+                    scanError = "Error: ${e.message}"
+                } finally {
+                    isScanning = false
+                }
             }
         }
     }
@@ -3603,6 +3715,133 @@ fun AddMedicineDialog(
                 verticalArrangement = Arrangement.spacedBy(14.dp)
             ) {
                 Text("Add New Medicine", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+
+                // AI Scanning Banner / Options
+                Card(
+                    shape = RoundedCornerShape(12.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFFE8F5E9)),
+                    border = BorderStroke(1.dp, Color(0xFFC8E6C9)),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(
+                        modifier = Modifier.padding(12.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.AutoAwesome,
+                                contentDescription = "AI Scanner",
+                                tint = Color(0xFF2E7D32)
+                            )
+                            Text(
+                                text = "AI Medicine Scanner",
+                                style = MaterialTheme.typography.titleSmall,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFF2E7D32)
+                            )
+                        }
+                        
+                        Text(
+                            text = "Take a picture of medicine packaging or choose from gallery to automatically fill the details!",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = Color(0xFF558B2F),
+                            textAlign = TextAlign.Center
+                        )
+
+                        Card(
+                            colors = CardDefaults.cardColors(containerColor = Color(0xFFF1F8E9)),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Column(
+                                modifier = Modifier.padding(10.dp),
+                                verticalArrangement = Arrangement.spacedBy(4.dp)
+                            ) {
+                                Text(
+                                    text = "💡 Best Result Tips / Behtreen Tareeqa:",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFF2E7D32)
+                                )
+                                Text(
+                                    text = "1. Place the medicine on a flat surface and take a photo without holding it in your hand.\n2. Medicine ko niche rakh kar photo khainchein, haath mein mat pakrein.",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = Color(0xFF33691E)
+                                )
+                                Spacer(modifier = Modifier.height(2.dp))
+                                Text(
+                                    text = "✨ Our smart filter will automatically clean and brighten the background locally!",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = Color(0xFF2E7D32)
+                                )
+                            }
+                        }
+                        
+                        if (isScanning) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                modifier = Modifier.padding(vertical = 4.dp)
+                            ) {
+                                CircularProgressIndicator(
+                                    color = Color(0xFF2E7D32),
+                                    modifier = Modifier.size(16.dp),
+                                    strokeWidth = 2.dp
+                                )
+                                Text(
+                                    text = "Analyzing medicine packaging...",
+                                    style = MaterialTheme.typography.labelMedium,
+                                    color = Color(0xFF2E7D32),
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                            }
+                        } else {
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                OutlinedButton(
+                                    onClick = { scanCameraLauncher.launch(null) },
+                                    colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFF2E7D32)),
+                                    border = BorderStroke(1.dp, Color(0xFF2E7D32)),
+                                    modifier = Modifier.weight(1f),
+                                    shape = RoundedCornerShape(8.dp),
+                                    contentPadding = PaddingValues(vertical = 8.dp)
+                                ) {
+                                    Icon(Icons.Default.PhotoCamera, null, modifier = Modifier.size(16.dp))
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    Text("Take Photo", style = MaterialTheme.typography.labelMedium)
+                                }
+                                
+                                Button(
+                                    onClick = { scanGalleryLauncher.launch("image/*") },
+                                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2E7D32)),
+                                    modifier = Modifier.weight(1f),
+                                    shape = RoundedCornerShape(8.dp),
+                                    contentPadding = PaddingValues(vertical = 8.dp)
+                                ) {
+                                    Icon(Icons.Default.PhotoLibrary, null, modifier = Modifier.size(16.dp))
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    Text("From Gallery", style = MaterialTheme.typography.labelMedium)
+                                }
+                            }
+                        }
+                        
+                        scanError?.let {
+                            Text(
+                                text = it,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.error,
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier.padding(top = 4.dp)
+                            )
+                        }
+                    }
+                }
 
                 OutlinedTextField(value = name, onValueChange = { name = it }, label = { Text("Medicine Name") }, modifier = Modifier.fillMaxWidth())
                 OutlinedTextField(value = formula, onValueChange = { formula = it }, label = { Text("Formula") }, modifier = Modifier.fillMaxWidth())
@@ -3772,7 +4011,7 @@ fun EditMedicineDialog(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
         uri?.let {
-            val localPath = saveUriToLocalFile(context, it)
+            val localPath = saveAndProcessUriToLocalFile(context, it)
             if (localPath != null) {
                 imageUriPath = localPath
                 imageUrlField = "" // Clear URL field if we picked a local file
